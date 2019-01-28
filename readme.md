@@ -1,0 +1,2 @@
+- gcloud config set project doneasy
+- gcloud auth application-default login

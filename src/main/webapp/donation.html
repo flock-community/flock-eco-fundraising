@@ -1,0 +1,300 @@
+<html>
+
+<head>
+    <style>
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner:after {
+            content: '';
+            box-sizing: border-box;
+            width: 20px;
+            height: 20px;
+            margin-top: 1px;
+            margin-left: 10px;
+            border-radius: 50%;
+            border-top: 2px solid #ffffff;
+            border-right: 2px solid transparent;
+            animation: spinner .7s linear infinite;
+        }
+
+        .btn {
+            display: flex !important;
+            font-weight: 600 !important;
+            padding: 5px 10px !important;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+    <script src="   /donation.js"></script>
+
+</head>
+
+
+<body>
+<form id="donation">
+    <input type="hidden" class="form-control" id="group" name="sepa-country" value="TEST_GROUP">
+    <div class="container mr-5">
+        <div class="row">
+            <div class="col-sm"><b>Hoeveel wilt u doneren?</b>
+                <div id="amount-radio" class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="amount" id="amount-5" value="5" required>
+                        <label class="form-check-label" for="amount-5">&euro; 5,00</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="amount" id="amount-10" value="10" required>
+                        <label class="form-check-label" for="amount-10">&euro; 10,00</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="amount" id="amount-50" value="50" required>
+                        <label class="form-check-label" for="amount-50">&euro;
+                            50,00</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="amount" id="amount-other" value="other"
+                               required>
+                        <label class="form-check-label" for="amount-other">ander bedrag</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="other-amount-input" class="row" style="display: none">
+            <div class="col-sm-7 col-md-6 col-lg-5">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">&euro;</span>
+                    </div>
+                    <div>
+                        <input id="other-amount-input-field" type="text" class="form-control input">
+                    </div>
+                    <div class="input-group-append"><span class="input-group-text">.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="payment-method" class="row">
+            <div class="col-sm-6"><b>Hoe wilt u betalen?</b></br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="paymentType" id="ideal" value="IDEAL" required>
+                    <label class="form-check-label" for="ideal">iDEAL</label></div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="paymentType" id="creditcard" value="CREDIT_CARD"
+                           required>
+                    <label class="form-check-label" for="creditcard">Creditcard</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="paymentType" id="sepa" value="SEPA"
+                           required>
+                    <label class="form-check-label" for="sepa">Sepa</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="bank-select-input" style="display: none">
+            <hr/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="mr-2" for="ideal-select">Selecteer uw bank</label>
+                        <select id="ideal-select" class="form-control">
+                            <option selected disabled hidden value="">Maak een keuze</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="creditcard-select-input" style="display: none">
+            <hr/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="mr-2" for="creditcard-select">Selecteer uw creditcardmaatschappij</label>
+                        <select id="creditcard-select" class="form-control">
+                            <option selected disabled hidden value="">Maak een keuze</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sepa-select-input" style="display: none">
+            <hr/>
+            <input type="hidden" class="form-control" id="sepa-country" name="sepa-country" value="NL">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <!--<label class="form-label" for="sepa-frequency">Frequency</label>-->
+                        <select class="form-control" id="sepa-frequency" class="input">
+                            <option selected value="YEARLY">Yearly</option>
+                            <option value="QUARTERLY">Quarterly</option>
+                            <option value="MONTHLY">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <!--<label class="form-label" for="sepa-name">Name</label>-->
+                        <input type="text" class="form-control" id="sepa-name" name="sepa-name" placeholder="Name">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <!--<label class="form-label" for="sepa-iban">Iban</label>-->
+                        <input type="text" class="form-control" id="sepa-iban" name="sepa-iban" placeholder="Iban">
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <!--<label class="form-label" for="sepa-bic">Bic</label>-->
+                        <input type="text" class="form-control" id="sepa-bic" name="sepa-bic" placeholder="Bic">
+                        <small id="fileHelp" class="form-text text-muted">
+                            <a target="_blank"
+                               href="https://www.betaalvereniging.nl/betalingsverkeer/giraal-betalingsverkeer/bic-sepa-transacties/">Klik
+                                hier om je BIC nummer to vinden</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-sm-6"><b>Wat zijn uw gegevens?</b></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-check"><input type="checkbox" class="form-check-input" id="anonymous"><label
+                        class="form-check-label" for="anonymous">Ik wil zonder registratie doneren</label></div>
+            </div>
+        </div>
+        <div id="personal-data">
+            <div class="row">
+                <div class="col-sm-6">
+                    <br/>
+                    <div class="form-group">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="gender" id="male" value="MALE" required>
+                            <label class="form-check-label" for="male">Dhr.</label></div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="gender" id="female" value="FEMALE"
+                                   required>
+                            <label class="form-check-label" for="female">Mevr.</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="gender" id="different" value="OTHER"
+                                   required>
+                            <label class="form-check-label" for="different">Anders</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5 col-md-4">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Voornaam" required>
+                    </div>
+                </div>
+                <div class="col-sm-2 col-md-2">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="infix" name="infix" placeholder="Tussenvoegsel">
+                    </div>
+                </div>
+                <div class="col-sm-5 col-md-4">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="surName" name="surName" placeholder="Achternaam" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="street" name="street" placeholder="Street" required>
+                    </div>
+                </div>
+                <div class="col-sm-2 col-md-2">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="houseNumber" name="houseNumber" placeholder="Huisnr." required>
+                    </div>
+                </div>
+                <div class="col-sm-2 col-md-2">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="houseNumberExtension" name="houseNumberExtension" placeholder="Toev.">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-md-4">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="postalCode" name="postalCode" placeholder="Postal code" required>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="city" name="city" placeholder="City" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Telefoonnummer" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="email" placeholder="Emailadres"
+                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" required>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-check"><input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">Ik ben akkoord met de <a
+                            href="#">voorwaarden</a></label>
+                </div>
+                <div class="form-check"><input type="checkbox" class="form-check-input" id="newsletter">
+                    <label class="form-check-label" for="newsletter">Ik ontvang graag de nieuwsbrief</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-notification" class="row mt-3 d-none">
+            <div class="col-sm-12">
+                <div class="alert alert-danger"><strong>Er is iets fout gegaan</strong> probeer het later nogmaals.
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px">Bevestig</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+</body>
+
+</html>
