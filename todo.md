@@ -1,2 +1,0 @@
-- Cancel search requests in list view
-- When stopping a donation give the option for a reason
