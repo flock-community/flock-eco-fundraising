@@ -17,7 +17,7 @@
         <google.datastore.version>1.28.0</google.datastore.version>
         <google.appengine.version>1.9.64</google.appengine.version>
         <google.store.version>1.28.0</google.store.version>
-        <flock.eco.version>1.20</flock.eco.version>
+        <flock.eco.version>1.21</flock.eco.version>
     </properties>
 
     <dependencies>
@@ -135,32 +135,32 @@
 
         <!-- Flock Eco-->
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-core</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-user</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-member</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-payment</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-mailchimp</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.flock-se.flock-eco</groupId>
+            <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-gcp-runtimeconfig</artifactId>
             <version>${flock.eco.version}</version>
         </dependency>
@@ -308,7 +308,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>com.github.flock-se.flock-eco</includeGroupIds>
+                            <includeGroupIds>com.github.flock-community.flock-eco</includeGroupIds>
                             <includes>**/*.js</includes>
                             <outputDirectory>${project.build.directory}/react</outputDirectory>
                             <useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
