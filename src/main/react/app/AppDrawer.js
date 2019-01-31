@@ -26,7 +26,7 @@ import MailIcon from '@material-ui/icons/Mail';
 import SepaIcon from '@material-ui/icons/CompareArrows';
 
 
-import AppAuthority from "./AppAuthority";
+import AuthorityUtil from "../utils/AuthorityUtil";
 
 const drawerWidth = 240;
 
@@ -92,20 +92,6 @@ const styles = theme => ({
 
 class AppDrawer extends React.Component {
 
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      authorities: {
-        hasAuthority: () => {
-        }
-      }
-    }
-
-    AppAuthority().then(authorities => this.setState({authorities}))
-  }
-
   render() {
     const {classes, theme} = this.props;
 
@@ -137,69 +123,75 @@ class AppDrawer extends React.Component {
             </ListItem>
           </div>
 
-          {this.state.authorities.hasAuthority("MemberAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/members">
-              <ListItemIcon>
-                <MemberIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Member"/>
-            </ListItem>
-          </div>}
+          <AuthorityUtil has="MemberAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/members">
+                <ListItemIcon>
+                  <MemberIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Member"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
 
-          {this.state.authorities.hasAuthority("DonationsAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/donations">
-              <ListItemIcon>
-                <DonationIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Donations"/>
-            </ListItem>
-          </div>}
-          {this.state.authorities.hasAuthority("DonationsAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/transactions">
-              <ListItemIcon>
-                <SepaIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Sepa transactions"/>
-            </ListItem>
-          </div>}
+          <AuthorityUtil has="DonationsAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/donations">
+                <ListItemIcon>
+                  <DonationIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Donations"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
+          <AuthorityUtil has="DonationsAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/transactions">
+                <ListItemIcon>
+                  <SepaIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Sepa transactions"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
 
-          {this.state.authorities.hasAuthority("DonationsAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/mailchimp">
-              <ListItemIcon>
-                <MailIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Mailchimp"/>
-            </ListItem>
-          </div>}
+          <AuthorityUtil has="DonationsAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/mailchimp">
+                <ListItemIcon>
+                  <MailIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Mailchimp"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
 
         </List>
 
         <List>
-          {this.state.authorities.hasAuthority("ReserveAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/reservations">
-              <ListItemIcon>
-                <ReserveIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Reservations"/>
-            </ListItem>
-          </div>}
+          <AuthorityUtil has="ReserveAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/reservations">
+                <ListItemIcon>
+                  <ReserveIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Reservations"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
 
           <Divider/>
 
-          {this.state.authorities.hasAuthority("UserAuthority.READ") &&
-          <div>
-            <ListItem button component="a" href="#/users">
-              <ListItemIcon>
-                <UserIcon/>
-              </ListItemIcon>
-              <ListItemText primary="Users"/>
-            </ListItem>
-          </div>}
+          <AuthorityUtil has="UserAuthority.READ">
+            <div>
+              <ListItem button component="a" href="#/users">
+                <ListItemIcon>
+                  <UserIcon/>
+                </ListItemIcon>
+                <ListItemText primary="Users"/>
+              </ListItem>
+            </div>
+          </AuthorityUtil>
 
           <div>
             <ListItem button component="a" href="#/profile">

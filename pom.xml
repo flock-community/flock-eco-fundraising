@@ -257,7 +257,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.flock.community.api.ApplicationKt</mainClass>
+                    <mainClass>community.flock.eco.fundraising.ApplicationKt</mainClass>
+                    <profiles>
+                        <profile>local</profile>
+                    </profiles>
                 </configuration>
             </plugin>
 
