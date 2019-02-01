@@ -56,8 +56,6 @@ class DonationRepositoryTest {
         val page = PageRequest.of(0,100)
         val res =donationRepository.findAll(page)
         val string = mapper.writeValueAsString(res)
-
-        println(string)
     }
 
     @Test
@@ -92,7 +90,6 @@ class DonationRepositoryTest {
         val res = donationRepository.findByMemberId(donation.member!!.id).first()
 
         assertEquals("TEST1", res.member!!.groups.toList()[0].code)
-        println("-----------" + memberGroupRepository.findAll())
     }
 
 }

@@ -3,8 +3,7 @@ package community.flock.eco.fundraising.controllers
 import community.flock.eco.feature.user.services.UserAuthorityService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.context.config.annotation.RefreshScope
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.oauth2.provider.OAuth2Authentication
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -32,10 +31,9 @@ class ConfigurationController(
                 applicationName = name,
                 isLoggedIn = principal != null,
                 authorities = when (principal) {
-                    is OAuth2Authentication -> principal.authorities
+                    is OAuth2AuthenticationToken -> principal.authorities
                             .map { it.authority }
-                    else -> userAuthorityService.allAuthorities()
-                            .map { it.toName() }
+                    else -> listOf()
                 }
         )
     }

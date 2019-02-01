@@ -247,7 +247,6 @@ class ExcelLoadData(
                 }
                 .let {
                     donationRepository.save(it)
-                    System.out.println(it.mandate.code)
                 }
     }
 

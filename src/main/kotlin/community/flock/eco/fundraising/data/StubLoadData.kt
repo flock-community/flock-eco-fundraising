@@ -31,6 +31,9 @@ class StubLoadData(
 
     @PostConstruct
     fun init() {
+
+        if(memberRepository.count() > 0) return
+
         val date = LocalDate
                 .now()
 

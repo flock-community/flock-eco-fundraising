@@ -5,28 +5,32 @@ import community.flock.eco.feature.user.repositories.UserRepository
 import community.flock.eco.feature.user.services.UserAuthorityService
 import community.flock.eco.fundraising.authorities.DonationsAuthority
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso
-import org.springframework.boot.autoconfigure.security.oauth2.resource.AuthoritiesExtractor
-import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority
+import org.springframework.security.core.userdetails.User as UserDetail
 
 
 @Configuration
-@EnableOAuth2Sso
+@EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-@Profile("!local")
 class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+
+    @Autowired
+    lateinit var environment: Environment
 
     @Autowired
     lateinit var userAuthorityService: UserAuthorityService
 
+
+    @Autowired
+    lateinit var userRepository: UserRepository
 
     override fun configure(http: HttpSecurity) {
 
@@ -34,6 +38,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
         http
                 .csrf().disable()
+        http
                 .authorizeRequests()
                 .antMatchers("/configuration").permitAll()
                 .antMatchers("/login").permitAll()
@@ -46,47 +51,50 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .antMatchers(HttpMethod.GET, "/api/mailchimp/webhook").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/mailchimp/webhook").permitAll()
                 .anyRequest().hasRole("USER")
-                .and()
+
+        http
                 .cors()
 
-
+        if(environment.activeProfiles.contains("local"))
+            http.formLogin()
+        else
+            http.cloudLogin()
     }
 
-    @Bean
-    fun principalExtractor(userRepository: UserRepository): PrincipalExtractor {
-        return PrincipalExtractor {
-            val reference = it.get("email").toString()
+    fun HttpSecurity.cloudLogin(): HttpSecurity {
+        http
+                .oauth2Login()
+                .userInfoEndpoint()
+                .userAuthoritiesMapper {
+                    val authority = it.first() as OidcUserAuthority
+                    val name = authority.attributes.get("name").toString()
+                    val email = authority.attributes.get("email").toString()
+                    val count = userRepository.count()
 
-            val count = userRepository.count()
-            val user = userRepository.findByReference(reference)
+                    val allAuthorities = userAuthorityService
+                            .allAuthorities()
+                            .map { it.toName() }
+                            .toSet()
 
-            if (!user.isPresent) {
-                val allAuthority = userAuthorityService
-                        .allAuthorities()
-                        .map { it.toName() }
-                        .toSet()
-                userRepository.save(User(
-                        reference = reference,
-                        name = it.get("name").toString(),
-                        email = it.get("email").toString(),
-                        authorities = if (count == 0L) allAuthority else setOf()
-                ))
-            } else {
-                user.get()
-            }
-        }
-    }
+                    val user = userRepository.findByReference(email)
+                            .orElseGet {
+                                val user = User(
+                                        reference = email,
+                                        name = name,
+                                        email = email,
+                                        authorities = if (count == 0L) allAuthorities else setOf()
+                                )
+                                userRepository.save(user)
+                            }
 
-    @Bean
-    fun authoritiesExtractor(userRepository: UserRepository): AuthoritiesExtractor {
+                    user.let {
+                        it.authorities
+                                .map { SimpleGrantedAuthority(it) }
+                                .plus(SimpleGrantedAuthority("ROLE_USER"))
+                    }
 
-        return AuthoritiesExtractor {
-            val reference = it.get("email").toString()
-            userRepository.findByReference(reference)
-                    .filter { it.authorities.isNotEmpty() }
-                    .map { it.authorities.map { SimpleGrantedAuthority(it) } + listOf(SimpleGrantedAuthority("ROLE_USER")) }
-                    .orElse(listOf())
-        }
+                }
+        return http
     }
 
 
