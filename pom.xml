@@ -17,7 +17,7 @@
         <google.datastore.version>1.28.0</google.datastore.version>
         <google.appengine.version>1.9.64</google.appengine.version>
         <google.store.version>1.28.0</google.store.version>
-        <flock.eco.version>1.21</flock.eco.version>
+        <flock.eco.version>1.22</flock.eco.version>
     </properties>
 
     <dependencies>

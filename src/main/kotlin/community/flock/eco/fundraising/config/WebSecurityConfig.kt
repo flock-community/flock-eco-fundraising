@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority
 import org.springframework.security.core.userdetails.User as UserDetail
 
 
+
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -50,19 +52,40 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .antMatchers(HttpMethod.POST, "/api/payment/buckaroo/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/mailchimp/webhook").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/mailchimp/webhook").permitAll()
-                .anyRequest().hasRole("USER")
+        //.anyRequest().hasRole("USER")
 
         http
                 .cors()
 
-        if(environment.activeProfiles.contains("local"))
-            http.formLogin()
+        if (environment.activeProfiles.contains("local"))
+            http.localLogin()
         else
             http.cloudLogin()
     }
 
+    fun HttpSecurity.localLogin(): HttpSecurity {
+
+        val allAuthorities = userAuthorityService
+                .allAuthorities()
+                .map { it.toName() }
+                .map { SimpleGrantedAuthority(it) }
+                .plus(SimpleGrantedAuthority("ROLE_USER"))
+                .toTypedArray()
+
+        val user = UserDetail.withDefaultPasswordEncoder()
+                .username("user")
+                .password("password")
+                .authorities(*allAuthorities)
+                .build()
+
+        this.userDetailsService { user }
+        this.formLogin()
+
+        return this
+    }
+
     fun HttpSecurity.cloudLogin(): HttpSecurity {
-        http
+        this
                 .oauth2Login()
                 .userInfoEndpoint()
                 .userAuthoritiesMapper {
@@ -94,7 +117,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                     }
 
                 }
-        return http
+        return this
     }
 
 
