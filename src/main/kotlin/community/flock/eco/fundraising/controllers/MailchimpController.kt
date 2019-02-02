@@ -11,6 +11,7 @@ import community.flock.eco.feature.member.controllers.UpdateMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
 import community.flock.eco.feature.member.repositories.MemberRepository
+import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,6 +24,10 @@ class MailchimpController(
         private val memberGroupRepository: MemberGroupRepository,
         private val mailchimpClient: MailchimpClient
 ) {
+
+    companion object {
+        val logger = LoggerFactory.getLogger(MailchimpController::class.java)
+    }
 
     @EventListener
     fun handleMemberEvent(event: MemberEvent) {
@@ -74,15 +79,19 @@ class MailchimpController(
     }
 
     private fun syncMember(member: Member) {
-        member.email?.also { email ->
-            val new = constructMailchimpMember(member)
-            val current = mailchimpClient.getMember(email)
-            if (current != null) {
-                mailchimpClient.putMember(new)
-                mailchimpClient.putTags(email, new.tags, current.tags.minus(new.tags))
-            } else {
-                mailchimpClient.postMember(new)
+        try {
+            member.email?.also { email ->
+                val new = constructMailchimpMember(member)
+                val current = mailchimpClient.getMember(email)
+                if (current != null) {
+                    mailchimpClient.putMember(new)
+                    mailchimpClient.putTags(email, new.tags, current.tags.minus(new.tags))
+                } else {
+                    mailchimpClient.postMember(new)
+                }
             }
+        }catch (ex:Exception){
+            logger.info(ex.message)
         }
     }
 

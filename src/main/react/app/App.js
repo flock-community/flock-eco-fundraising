@@ -48,7 +48,7 @@ class App extends React.Component {
       .then(res => res.json())
       .then(json => {
         if(!json.loggedIn){
-          window.location.replace("/login");
+          window.location.replace("/oauth2/authorization/google");
         }else{
             AuthorityUtil.setAuthorities(json.authorities)
           this.setState({
