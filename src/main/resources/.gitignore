@@ -1,3 +1,2 @@
-application-cloud.properties
-application-local.properties
-application-test.properties
+bootstrap-*.properties
+application-*.properties

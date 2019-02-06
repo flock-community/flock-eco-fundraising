@@ -21,7 +21,6 @@ import MemberIcon from '@material-ui/icons/Face';
 import UserIcon from '@material-ui/icons/People';
 import ProfileIcon from '@material-ui/icons/Person';
 import SettingsIcon from '@material-ui/icons/SettingsSharp';
-import ReserveIcon from '@material-ui/icons/AccountBalance';
 import MailIcon from '@material-ui/icons/Mail';
 import SepaIcon from '@material-ui/icons/CompareArrows';
 
@@ -168,19 +167,9 @@ class AppDrawer extends React.Component {
 
         </List>
 
-        <List>
-          <AuthorityUtil has="ReserveAuthority.READ">
-            <div>
-              <ListItem button component="a" href="#/reservations">
-                <ListItemIcon>
-                  <ReserveIcon/>
-                </ListItemIcon>
-                <ListItemText primary="Reservations"/>
-              </ListItem>
-            </div>
-          </AuthorityUtil>
+        <Divider/>
 
-          <Divider/>
+        <List>
 
           <AuthorityUtil has="UserAuthority.READ">
             <div>

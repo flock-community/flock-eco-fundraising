@@ -6,9 +6,7 @@ import AppLayout from './AppLayout'
 
 import DashboardFeature from '../dashboard/DashboardFeature'
 import DonationFeature from '../donation/DonationFeature'
-import ReserveFeature from '../reserve/ReserveFeature'
 import MailchimpFeature from '../mailchimp/MailchimpFeature'
-import ReserveStatistics from '../reserve/ReserveStatistics'
 import TransactionFeature from '../transaction/TransactionFeature'
 
 import MemberFeature from 'flock-eco-feature-member/member/MemberFeature'
@@ -48,7 +46,7 @@ class App extends React.Component {
       .then(res => res.json())
       .then(json => {
         if(!json.loggedIn){
-          window.location.replace("/oauth2/authorization/google");
+          window.location.replace("/login");
         }else{
             AuthorityUtil.setAuthorities(json.authorities)
           this.setState({
@@ -91,14 +89,6 @@ class App extends React.Component {
 
           <Route path='/mailchimp' exact render={(props) => (
             <MailchimpFeature/>
-          )}/>
-
-          <Route path='/reservations' exact render={(props) => (
-            <ReserveFeature/>
-          )}/>
-
-          <Route path='/reservations/:id' exact render={(props) => (
-            <ReserveStatistics reserve={props.match.params.id}/>
           )}/>
 
           <Route path='/users' exact render={(props) => (

@@ -254,9 +254,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>community.flock.eco.fundraising.ApplicationKt</mainClass>
-                    <profiles>
-                        <profile>local</profile>
-                    </profiles>
                 </configuration>
             </plugin>
 
