@@ -22,6 +22,7 @@ class DonationTable extends React.Component {
       <Table style={{minWidth: 1000}}>
         <TableHead>
           <TableRow>
+            <TableCell>Code</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Amount</TableCell>
             <TableCell>Frequency</TableCell>
@@ -38,7 +39,8 @@ class DonationTable extends React.Component {
               hover
               onClick={event => this.handleRowClick(event, it)}
             >
-              <TableCell scope="row">{this.memberToName(it.member)}</TableCell>
+              <TableCell scope="row">{it.mandate.code}</TableCell>
+              <TableCell>{this.memberToName(it.member)}</TableCell>
               <TableCell>&euro; {it.mandate.amount},-</TableCell>
               <TableCell>{it.mandate.frequency}</TableCell>
               <TableCell>{it.mandate.collectionMonth}</TableCell>

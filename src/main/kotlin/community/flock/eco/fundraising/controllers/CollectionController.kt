@@ -51,7 +51,7 @@ class CollectionController(
     @Value("\${flock.fundraising.donations.sepa.country:@null}")
     lateinit var sepaCountry: String
 
-    @Value("\${flock.fundraising.donations.collection.dayOfMonth:1")
+    @Value("\${flock.fundraising.donations.collection.dayOfMonth:1}")
     lateinit var dayOfMonth: String
 
     @GetMapping("/generate/{year}/{month}", produces = [MediaType.APPLICATION_XML_VALUE])

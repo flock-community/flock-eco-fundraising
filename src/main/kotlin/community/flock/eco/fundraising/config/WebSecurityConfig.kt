@@ -17,8 +17,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority
 import org.springframework.security.core.userdetails.User as UserDetail
 
 
-
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -52,7 +50,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .antMatchers(HttpMethod.POST, "/api/payment/buckaroo/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/mailchimp/webhook").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/mailchimp/webhook").permitAll()
-        //.anyRequest().hasRole("USER")
+                .anyRequest().hasRole("USER")
 
         http
                 .cors()
