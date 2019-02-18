@@ -64,8 +64,10 @@ jQuery(document).ready(function () {
 
   var removeRequiredOnInput = function (el) {
     jQuery.each(el.querySelectorAll('input'), function () {
-      this.setAttribute("notrequired", "");
-      this.removeAttribute("required");
+      if (this.hasAttribute("required")){
+        this.setAttribute("notrequired", "");
+        this.removeAttribute("required");
+      }
     });
   };
 
@@ -152,7 +154,7 @@ jQuery(document).ready(function () {
   }
 
   // FORM SUBMIT
-  document.addEventListener("submit", function () {
+  document.addEventListener("submit", function (event) {
     event.preventDefault();
     donate();
   });
