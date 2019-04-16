@@ -25,6 +25,7 @@ class DonationTable extends React.Component {
             <TableCell>Code</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Amount</TableCell>
+            <TableCell>Destination</TableCell>
             <TableCell>Frequency</TableCell>
             <TableCell>Collection Month</TableCell>
             <TableCell>Start Date</TableCell>
@@ -42,6 +43,7 @@ class DonationTable extends React.Component {
               <TableCell scope="row">{it.mandate.code}</TableCell>
               <TableCell>{this.memberToName(it.member)}</TableCell>
               <TableCell>&euro; {it.mandate.amount},-</TableCell>
+              <TableCell>{it.destination}</TableCell>
               <TableCell>{it.mandate.frequency}</TableCell>
               <TableCell>{it.mandate.collectionMonth}</TableCell>
               <TableCell>{this.getFormattedDate(it.mandate.startDate)}</TableCell>

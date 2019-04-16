@@ -22,6 +22,8 @@ import Chip from '@material-ui/core/Chip';
 
 import PaymentMandateForm from './PaymentMandateForm';
 import MemberForm from '@flock-eco/feature-member/src/main/react/member/MemberForm'
+import TextField from "@material-ui/core/TextField";
+import Grid from "@material-ui/core/Grid";
 
 class DonationDialog extends React.Component {
 
@@ -40,7 +42,8 @@ class DonationDialog extends React.Component {
           mandate: {
             bankAccount: {}
           },
-          member: {}
+          member: {},
+          destination: ''
         });
       } else if (this.props.id) {
         fetch(`/api/donations/${this.props.id}`)
@@ -53,7 +56,8 @@ class DonationDialog extends React.Component {
                   donation: donation,
                   member: donation.member,
                   mandate: donation.mandate,
-                  transactions: transactions
+                  transactions: transactions,
+                  destination: donation.destination
                 });
               })
           })
@@ -64,11 +68,16 @@ class DonationDialog extends React.Component {
           donation: null,
           mandate: null,
           member: null,
-          transactions: []
+          transactions: [],
+          destination: null
         });
       }
 
     }
+  }
+
+  handleChangeDestination = (ev) => {
+    this.setState({destination: ev.target.value})
   }
 
   handleChangeMandate = (value) => {
@@ -100,9 +109,13 @@ class DonationDialog extends React.Component {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
         },
-        body: JSON.stringify(this.state.mandate),
+        body: JSON.stringify({
+          member: this.state.member,
+          mandate: this.state.mandate,
+          destination: this.state.destination
+        }),
       };
-      fetch(`/api/payment/mandates/${this.state.mandate.id}`, opts)
+      fetch(`/api/donations/${this.props.id}`, opts)
         .then((res) => {
           if (!res.ok) {
             res.json().then(e => {
@@ -123,6 +136,7 @@ class DonationDialog extends React.Component {
             type: "SEPA",
             ...this.state.mandate
           },
+          destination: this.state.destination
         }),
       };
       fetch('/api/donations', opts)
@@ -197,8 +211,19 @@ class DonationDialog extends React.Component {
       <React.Fragment>
         <DialogContent>
           <ValidatorForm id="donate-form" onSubmit={this.handleSubmit}>
+
             {this.state.mandate.frequency !== 'ONCE' &&
             <PaymentMandateForm value={this.state.mandate} onChange={this.handleChangeMandate}/>}
+            <Grid container spacing={16}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Destination"
+                  value={this.state.destination || ''}
+                  onChange={this.handleChangeDestination}
+                />
+              </Grid>
+            </Grid>
             {!this.state.donation && <MemberForm value={this.state.member} onChange={this.handleChangeMember}/>}
           </ValidatorForm>
         </DialogContent>

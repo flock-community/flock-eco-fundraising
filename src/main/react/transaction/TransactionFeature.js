@@ -72,7 +72,7 @@ class TransactionFeature extends React.Component {
     const opts = {
       method: "POST",
     }
-    fetch(`/api/donations/transactions/${year}/${month}/success`, opts)
+    fetch(`/api/transactions/${year}/${month}/success`, opts)
       .then(res => {
         this.setState({
           count: parseInt(res.headers.get('x-total')),

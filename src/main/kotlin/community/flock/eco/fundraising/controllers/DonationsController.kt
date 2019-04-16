@@ -1,14 +1,16 @@
 package community.flock.eco.fundraising.controllers
 
+import community.flock.eco.core.utils.toResponse
 import community.flock.eco.feature.member.controllers.MergeMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberGroup
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
-import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.member.services.MemberService
-import community.flock.eco.feature.payment.model.*
+import community.flock.eco.feature.payment.model.PaymentBankAccount
+import community.flock.eco.feature.payment.model.PaymentFrequency
+import community.flock.eco.feature.payment.model.PaymentMandate
+import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.feature.payment.repositories.PaymentMandateRepository
-import community.flock.eco.feature.payment.repositories.PaymentTransactionRepository
 import community.flock.eco.feature.payment.services.PaymentBuckarooService
 import community.flock.eco.feature.payment.services.PaymentSepaService
 import community.flock.eco.fundraising.model.Donation
@@ -30,12 +32,10 @@ class DonationsController(
         private val buckarooService: PaymentBuckarooService,
         private val sepaService: PaymentSepaService,
         private val memberService: MemberService,
-        private val memberRepository: MemberRepository,
         private val memberGroupRepository: MemberGroupRepository,
         private val memberFieldService: MemberFieldService,
         private val paymentMandateRepository: PaymentMandateRepository,
-        private val donationRepository: DonationRepository,
-        private val paymentTransactionRepository: PaymentTransactionRepository) {
+        private val donationRepository: DonationRepository) {
 
     @Value("\${flock.fundraising.donations.successUrl:@null}")
     lateinit var successUrl: String
@@ -54,7 +54,8 @@ class DonationsController(
             val member: Member? = null,
             val newsletter: Boolean,
             val agreedOnTerms: Boolean,
-            val group: String? = null
+            val group: String? = null,
+            val destination: String? = null
     )
 
     data class Payment(
@@ -67,7 +68,8 @@ class DonationsController(
 
     data class DonationForm(
             val mandate: PaymentMandate,
-            val member: Member
+            val member: Member,
+            val destination: String? = null
     )
 
     data class DonationStopForm(
@@ -98,74 +100,10 @@ class DonationsController(
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
     fun findById(@PathVariable id: Long): ResponseEntity<Donation> {
-        return donationRepository.findById(id)
-                .map {
-                    ResponseEntity(it, HttpStatus.OK)
-                }.orElseGet {
-                    ResponseEntity(HttpStatus.NOT_FOUND)
-                }
-    }
-
-    data class ResponseMandateTransaction(val mandate: PaymentMandate, val transaction: PaymentTransaction)
-
-    @GetMapping("/transactions/{year}/{month}")
-    @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
-    fun findByMonthAndYear(
-            @PathVariable("month") month: Int,
-            @PathVariable("year") year: Int,
-            page: Pageable): ResponseEntity<List<ResponseMandateTransaction>> {
-
-        val startDate = LocalDate.of(year, month, 1)
-        val endDate = startDate.withDayOfMonth(startDate.lengthOfMonth())
-        val type = PaymentType.SEPA
-        val res = paymentTransactionRepository.findBetweenDate(startDate, endDate, type, page)
-        val entity = res.content
-                .map { ResponseMandateTransaction(it.mandate, it) }
-        val headers = HttpHeaders()
-        headers.set("x-page", page.pageNumber.toString())
-        headers.set("x-total", res.totalElements.toString())
-        return ResponseEntity(entity, headers, HttpStatus.OK)
-    }
-
-    @PostMapping("/transactions/{year}/{month}/success")
-    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
-    fun markTransactionsSuccess(
-            @PathVariable("month") month: Int,
-            @PathVariable("year") year: Int): ResponseEntity<List<Donation>> {
-
-        val startDate = LocalDate.of(year, month, 1)
-        val endDate = startDate.withDayOfMonth(startDate.lengthOfMonth())
-
-        return paymentTransactionRepository.findBetweenDate(startDate, endDate)
-                .filter { it.mandate.type == PaymentType.SEPA }
-                .filter { it.status == PaymentTransactionStatus.PENDING }
-                .map {
-                    it.copy(
-                            status = PaymentTransactionStatus.SUCCESS
-                    )
-                }
-                .let { paymentTransactionRepository.saveAll(it) }
-                .let { ResponseEntity(HttpStatus.OK) }
-    }
-
-    @PostMapping("/transactions/{id}/status/{status}")
-    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
-    fun markTransactionStatus(
-            @PathVariable("id") id: Long,
-            @PathVariable("status") status: String): ResponseEntity<Any> {
-
-        return paymentTransactionRepository.findById(id)
-                .map {
-                    it.copy(
-                            status = PaymentTransactionStatus
-                                    .valueOf(status.toUpperCase())
-                    )
-                }
-                .map { paymentTransactionRepository.save(it) }
-                .map { ResponseEntity<Any>(HttpStatus.OK) }
-                .orElseGet { ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR) }
+        return donationRepository.findById(id).toResponse()
 
     }
+
 
     @PostMapping("/donate")
     fun donate(@RequestBody donate: Donate): ResponseEntity<String> {
@@ -207,7 +145,8 @@ class DonationsController(
                             .let {
                                 Donation(
                                         member = member,
-                                        mandate = it.mandate
+                                        mandate = it.mandate,
+                                        destination = donate.destination
                                 ).let {
                                     donationRepository.save(it)
                                 }
@@ -225,7 +164,8 @@ class DonationsController(
                             .let {
                                 Donation(
                                         member = member,
-                                        mandate = it.mandate
+                                        mandate = it.mandate,
+                                        destination = donate.destination
                                 ).let {
                                     donationRepository.save(it)
                                 }
@@ -243,7 +183,8 @@ class DonationsController(
                             .let {
                                 Donation(
                                         member = member,
-                                        mandate = it.mandate
+                                        mandate = it.mandate,
+                                        destination = donate.destination
                                 ).let {
                                     donationRepository.save(it)
                                 }
@@ -266,13 +207,33 @@ class DonationsController(
         memberFieldService.init()
         val donation = Donation(
                 member = memberService.create(form.member),
-                mandate = paymentMandateRepository.save(form.mandate)
+                mandate = paymentMandateRepository.save(form.mandate),
+                destination = form.destination
         ).let {
             donationRepository.save(it)
         }
 
         return ResponseEntity.ok(donation)
     }
+
+    @PutMapping("/{id}")
+    fun update(@PathVariable id: Long, @RequestBody form: DonationForm): ResponseEntity<Donation> {
+        memberFieldService.init()
+        return donationRepository.findById(id)
+                .map { donation ->
+                    donation.copy(
+                            member = memberService.update(form.member.id, form.member),
+                            mandate = paymentMandateRepository.save(form.mandate),
+                            destination = form.destination
+                    ).let {
+                        donationRepository.save(it)
+                    }
+
+                }
+                .toResponse()
+
+    }
+
 
     @PostMapping("/{id}/stop")
     fun stop(@PathVariable id: Long, @RequestBody form: DonationStopForm) {

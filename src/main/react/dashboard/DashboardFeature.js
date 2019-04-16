@@ -115,6 +115,19 @@ class DonationFeature extends React.Component {
               </CardContent>
             </Card>
 
+            <Card className={classes.card}>
+              <CardContent>
+                <Typography component="h5" variant="h5">
+                  Total donations by destination
+                </Typography>
+                {Object.keys(this.state.data.totalDonationsDestination).map(key => {
+                  return (<Typography component="p" variant="body1">
+                    {key}: {this.money.format(this.state.data.totalDonationsDestination[key])}
+                  </Typography>)
+                })}
+              </CardContent>
+            </Card>
+
           </Grid>
 
           <Grid item xs={8}>

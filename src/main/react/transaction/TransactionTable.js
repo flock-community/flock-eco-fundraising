@@ -52,7 +52,7 @@ class DonationTable extends React.Component {
 
     const {year, month} = this.props;
 
-    fetch(`/api/donations/transactions/${year}/${month}?page=${this.state.page}&size=${this.state.size}`)
+    fetch(`/api/transactions/${year}/${month}?page=${this.state.page}&size=${this.state.size}`)
       .then(res => {
         this.setState({
           count: parseInt(res.headers.get('x-total')),
@@ -73,7 +73,7 @@ class DonationTable extends React.Component {
     const opts = {
       method: "POST",
     }
-    fetch(`/api/donations/transactions/${transaction.id}/status/${status}`, opts)
+    fetch(`/api/transactions/${transaction.id}/status/${status}`, opts)
       .then(res => {
         if (res.status === 200) {
           this.loadData();

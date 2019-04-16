@@ -31,7 +31,8 @@ class DashboardController(
             val totalMembers: Int,
             val totalMandates: Int,
             val newMembers: List<Member>,
-            val newDonations: List<Donation>
+            val newDonations: List<Donation>,
+            val totalDonationsDestination: Map<String, Double>
     )
 
     @GetMapping()
@@ -43,7 +44,8 @@ class DashboardController(
                 totalMandates = countMandate(mandates),
                 totalMembers = countMembers(),
                 newMembers = newMembers(),
-                newDonations = newDonations()
+                newDonations = newDonations(),
+                totalDonationsDestination = totalDonationsDestination()
         )
     }
 
@@ -81,15 +83,7 @@ class DashboardController(
         return mandates
                 .filter { it.type == SEPA }
                 .filter { it.endDate == null }
-                .map {
-                    when (it.frequency) {
-                        PaymentFrequency.ONCE -> 0.0
-                        PaymentFrequency.MONTHLY -> it.amount * 12
-                        PaymentFrequency.QUARTERLY -> it.amount * 4
-                        PaymentFrequency.HALF_YEARLY -> it.amount * 2
-                        PaymentFrequency.YEARLY -> it.amount
-                    }
-                }
+                .map { calculateAmount(it) }
                 .fold(0.0) { cur, acc -> (acc + cur) }
                 .let { it.toInt() }
     }
@@ -103,7 +97,26 @@ class DashboardController(
                 .filter { it.created.isAfter(now.minusYears(1)) }
                 .filter { it.status == PaymentTransactionStatus.SUCCESS }
                 .groupBy { it.created.month.name }
-                .mapValues { (month, transactions) -> transactions.sumByDouble { it -> it.amount } }
+                .mapValues { (month, transactions) -> transactions
+                        .sumByDouble { it -> calculateAmount(it.mandate) } }
 
     }
+
+    fun totalDonationsDestination(): Map<String, Double> {
+        return donationRepository.findAll()
+                .filter { it.destination != null }
+                .groupBy { it.destination ?: "" }
+                .mapValues { (destination, donations) -> donations.sumByDouble { it -> it.mandate.amount } }
+
+
+    }
+
+    private fun calculateAmount(mandate:PaymentMandate) = when (mandate.frequency) {
+            PaymentFrequency.ONCE -> mandate.amount
+            PaymentFrequency.MONTHLY -> mandate.amount * 12
+            PaymentFrequency.QUARTERLY -> mandate.amount * 4
+            PaymentFrequency.HALF_YEARLY -> mandate.amount * 2
+            PaymentFrequency.YEARLY -> mandate.amount
+        }
+
 }
