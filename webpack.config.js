@@ -1,18 +1,10 @@
 const path = require('path')
-const webpack = require('webpack')
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 const htmlPlugin = new HtmlWebPackPlugin({
   template: path.resolve(__dirname, 'src/main/react/index.html'),
   filename: "./index.html"
 });
-
-const replacementPlugin = new webpack.NormalModuleReplacementPlugin(
-  /eco-feature-(.*)/, (resource) => {
-    const ref = resource.request.replace(/eco-feature-([^\/]*)\/(.*)/, 'eco-feature-$1-jar/$2')
-    resource.request = path.join(__dirname, 'target/react', ref)
-  }
-);
 
 module.exports = {
 
@@ -29,7 +21,7 @@ module.exports = {
     rules: [
       {
         test: /\.js|jsx$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(@flock-eco)\/).*/,
         use: {
           loader: "babel-loader",
           options: {
@@ -44,7 +36,7 @@ module.exports = {
     ]
   },
 
-  plugins: [htmlPlugin, replacementPlugin],
+  plugins: [htmlPlugin],
 
   devServer: {
     port: 3000,

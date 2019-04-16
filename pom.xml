@@ -3,6 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <artifactId>flock-eco-application-parent</artifactId>
+        <groupId>com.github.flock-community.flock-eco</groupId>
+        <version>1.1.5</version>
+    </parent>
+
     <groupId>com.github.flock-community.flock-eco-fundraising</groupId>
     <artifactId>flock-eco-fundraising</artifactId>
     <version>develop-SNAPSHOT</version>
@@ -17,7 +23,6 @@
         <google.datastore.version>1.28.0</google.datastore.version>
         <google.appengine.version>1.9.64</google.appengine.version>
         <google.store.version>1.28.0</google.store.version>
-        <flock.eco.version>1.22</flock.eco.version>
     </properties>
 
     <dependencies>
@@ -30,63 +35,9 @@
 
         <!-- Kotlin -->
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>2.9.4.1</version>
-        </dependency>
-
-        <!-- Spring boot starter -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-rest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <!-- Spring security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
 
         <!-- Database -->
@@ -100,14 +51,6 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <!-- Servlet -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
-            <type>jar</type>
         </dependency>
 
         <!-- Testing -->
@@ -133,32 +76,26 @@
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-core</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-user</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-member</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-payment</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-mailchimp</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-gcp-runtimeconfig</artifactId>
-            <version>${flock.eco.version}</version>
         </dependency>
 
         <dependency>
@@ -174,25 +111,6 @@
         </dependency>
 
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Greenwich.RC2</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <outputDirectory>target/${project.artifactId}-${project.version}/WEB-INF/classes</outputDirectory>
@@ -293,29 +211,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>unpack-dependencies</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeGroupIds>com.github.flock-community.flock-eco</includeGroupIds>
-                            <includes>**/*.js</includes>
-                            <outputDirectory>${project.build.directory}/react</outputDirectory>
-                            <useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
-                            <stripVersion>true</stripVersion>
-                            <stripClassifier>true</stripClassifier>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.6</version>
@@ -398,8 +293,12 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>bintray-flock-community</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/flock-community/flock-maven/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>spring-milestones</id>

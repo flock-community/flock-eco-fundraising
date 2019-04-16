@@ -21,7 +21,7 @@ import StopDialog from "./StopDialog";
 import Chip from '@material-ui/core/Chip';
 
 import PaymentMandateForm from './PaymentMandateForm';
-import MemberForm from 'flock-eco-feature-member/member/MemberForm'
+import MemberForm from '@flock-eco/feature-member/src/main/react/member/MemberForm'
 
 class DonationDialog extends React.Component {
 
