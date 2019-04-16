@@ -90,7 +90,7 @@ class MailchimpController(
                     mailchimpClient.postMember(new)
                 }
             }
-        }catch (ex:Exception){
+        } catch (ex: Exception) {
             logger.info(ex.message)
         }
     }

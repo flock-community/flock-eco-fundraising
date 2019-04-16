@@ -24,7 +24,9 @@ class DonationTable extends React.Component {
   }
 
   handleChangePage = (ev, page) => {
-    this.setState({page: page}, () => {this.loadData()})
+    this.setState({page: page}, () => {
+      this.loadData()
+    })
   }
 
   handleRowStatusClick = (item) => (ev) => {

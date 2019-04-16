@@ -1,6 +1,7 @@
 package community.flock.eco.fundraising.repositories
 
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberGroup
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
@@ -11,18 +12,17 @@ import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.feature.payment.repositories.PaymentMandateRepository
 import community.flock.eco.fundraising.model.Donation
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.util.*
-import com.fasterxml.jackson.module.kotlin.*
-import org.junit.Ignore
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.context.SpringBootTest
 
 @RunWith(SpringRunner::class)
 @DataJpaTest
@@ -48,8 +48,8 @@ class DonationRepositoryTest {
         val mapper = jacksonObjectMapper()
         mapper.registerModule(Hibernate5Module())
 
-        val page = PageRequest.of(0,100)
-        val res =donationRepository.findAll(page)
+        val page = PageRequest.of(0, 100)
+        val res = donationRepository.findAll(page)
         val string = mapper.writeValueAsString(res)
     }
 

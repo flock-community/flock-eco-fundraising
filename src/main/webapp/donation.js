@@ -64,7 +64,7 @@ jQuery(document).ready(function () {
 
   var removeRequiredOnInput = function (el) {
     jQuery.each(el.querySelectorAll('input'), function () {
-      if (this.hasAttribute("required")){
+      if (this.hasAttribute("required")) {
         this.setAttribute("notrequired", "");
         this.removeAttribute("required");
       }
@@ -97,7 +97,7 @@ jQuery(document).ready(function () {
     }
   });
 
-  if(paymentMethodRadioButtons) {
+  if (paymentMethodRadioButtons) {
     paymentMethodRadioButtons.addEventListener("click", function () {
 
       var idealCheckbox = document.querySelector('#ideal');
@@ -116,8 +116,7 @@ jQuery(document).ready(function () {
         jQuery(sepaName).prop('required', false);
         jQuery(sepaIban).prop('required', false);
         jQuery(sepaBic).prop('required', false);
-      }
-      else if (creditcardCheckbox && creditcardCheckbox.checked) {
+      } else if (creditcardCheckbox && creditcardCheckbox.checked) {
         jQuery(creditCardSelectInput).show();
         jQuery(bankSelectInput).hide();
         jQuery(sepaSelectInput).hide();
@@ -125,8 +124,7 @@ jQuery(document).ready(function () {
         jQuery(sepaName).prop('required', false);
         jQuery(sepaIban).prop('required', false);
         jQuery(sepaBic).prop('required', false);
-      }
-      else if (sepaCheckbox && sepaCheckbox.checked) {
+      } else if (sepaCheckbox && sepaCheckbox.checked) {
         jQuery(sepaSelectInput).show();
         jQuery(creditCardSelectInput).hide();
         jQuery(bankSelectInput).hide();
@@ -139,7 +137,7 @@ jQuery(document).ready(function () {
     });
   }
 
-  if(anonymousCheckbox) {
+  if (anonymousCheckbox) {
     anonymousCheckbox.addEventListener("change", function () {
       if (anonymousCheckbox.checked && !personalDataForm.classList.contains(hideClass)) {
         personalDataForm.className += (" " + hideClass);

@@ -2,7 +2,7 @@ package community.flock.eco.fundraising
 
 
 import com.fasterxml.jackson.databind.ObjectMapper
-
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.payment.model.PaymentBankAccount
@@ -11,6 +11,8 @@ import community.flock.eco.feature.payment.model.PaymentTransactionStatus
 import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.feature.payment.repositories.PaymentMandateRepository
 import community.flock.eco.feature.payment.repositories.PaymentTransactionRepository
+import community.flock.eco.fundraising.controllers.DonationsController
+import community.flock.eco.fundraising.repositories.DonationRepository
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,9 +29,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module
-import community.flock.eco.fundraising.controllers.DonationsController
-import community.flock.eco.fundraising.repositories.DonationRepository
 
 
 @RunWith(SpringRunner::class)

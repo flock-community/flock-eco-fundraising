@@ -1,12 +1,7 @@
 import React from "react";
 import {withStyles} from '@material-ui/core/styles';
 
-import Grid from '@material-ui/core/Grid';
-
-import Typography from '@material-ui/core/Typography';
-
 import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -23,7 +18,7 @@ const styles = theme => ({
 class SystemConfigurationFeature extends React.Component {
 
   state = {
-    data:[]
+    data: []
   }
 
   componentDidMount() {
@@ -58,7 +53,7 @@ class SystemConfigurationFeature extends React.Component {
   }
 
   renderTable() {
-    return(<Table>
+    return (<Table>
       <TableHead>
         <TableRow>
           <TableCell>Name</TableCell>

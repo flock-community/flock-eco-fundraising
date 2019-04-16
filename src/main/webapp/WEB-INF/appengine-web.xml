@@ -4,9 +4,9 @@
     <threadsafe>true</threadsafe>
     <runtime>java8</runtime>
     <static-files>
-        <include path="/**.html" ></include>
-        <include path="/**.js" ></include>
-        <include path="/**.ico" ></include>
+        <include path="/**.html"></include>
+        <include path="/**.js"></include>
+        <include path="/**.ico"></include>
     </static-files>
     <system-properties>
         <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
@@ -17,7 +17,7 @@
         <idle-timeout>30m</idle-timeout>
     </basic-scaling>
     <env-variables>
-        <env-var name="SPRING_PROFILES_ACTIVE" value="cloud" />
+        <env-var name="SPRING_PROFILES_ACTIVE" value="cloud"/>
     </env-variables>
     <sessions-enabled>true</sessions-enabled>
 </appengine-web-app>

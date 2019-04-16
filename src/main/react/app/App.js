@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {HashRouter, Route, Redirect} from 'react-router-dom'
+import {HashRouter, Redirect, Route} from 'react-router-dom'
 
 import AppLayout from './AppLayout'
 
@@ -24,7 +24,7 @@ import purple from '@material-ui/core/colors/purple';
 class App extends React.Component {
 
   state = {
-    spinner:true
+    spinner: true
   };
 
   get theme() {
@@ -41,17 +41,17 @@ class App extends React.Component {
     })
   }
 
-  componentDidMount(){
+  componentDidMount() {
     fetch('/configuration')
       .then(res => res.json())
       .then(json => {
-        if(!json.loggedIn){
+        if (!json.loggedIn) {
           window.location.replace("/login");
-        }else{
-            AuthorityUtil.setAuthorities(json.authorities)
+        } else {
+          AuthorityUtil.setAuthorities(json.authorities)
           this.setState({
             spinner: false,
-            applicationName:json.applicationName
+            applicationName: json.applicationName
           })
         }
 
@@ -60,8 +60,8 @@ class App extends React.Component {
 
   render() {
 
-    if(this.state.spinner)
-      return(<AppSpinner/>)
+    if (this.state.spinner)
+      return (<AppSpinner/>)
 
     return (
       <HashRouter>
@@ -72,7 +72,7 @@ class App extends React.Component {
           )}/>
 
           <Route path='/dashboard' exact render={(props) => (
-            <DashboardFeature />
+            <DashboardFeature/>
           )}/>
 
           <Route path='/members' exact render={(props) => (
@@ -84,7 +84,7 @@ class App extends React.Component {
           )}/>
 
           <Route path='/transactions/' exact render={(props) => (
-            <TransactionFeature />
+            <TransactionFeature/>
           )}/>
 
           <Route path='/mailchimp' exact render={(props) => (

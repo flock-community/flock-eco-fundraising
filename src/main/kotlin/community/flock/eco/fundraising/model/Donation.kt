@@ -3,7 +3,6 @@ package community.flock.eco.fundraising.model
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.payment.model.PaymentMandate
 import javax.persistence.*
-import javax.print.attribute.standard.Destination
 
 @Entity
 data class Donation(

@@ -129,28 +129,28 @@ class AppLayout extends React.Component {
           >
             <Toolbar disableGutters={!this.state.open}>
 
-                  <IconButton
-                    color="inherit"
-                    aria-label="Open drawer"
-                    onClick={this.handleDrawerOpen}
-                    className={classNames(classes.menuButton, this.state.open && classes.hide)}
-                  >
-                    <MenuIcon/>
-                  </IconButton>
+              <IconButton
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={this.handleDrawerOpen}
+                className={classNames(classes.menuButton, this.state.open && classes.hide)}
+              >
+                <MenuIcon/>
+              </IconButton>
 
-                  <Typography variant="h6" color="inherit" noWrap className={classes.grow}>
-                    {this.props.title || "App name"}
-                  </Typography>
+              <Typography variant="h6" color="inherit" noWrap className={classes.grow}>
+                {this.props.title || "App name"}
+              </Typography>
 
 
-                  <Button
-                    color="inherit"
-                    aria-label="Open drawer"
-                    onClick={this.handleInfoOpen}
-                    className={classNames(classes.menuButton, this.state.open && classes.hide)}
-                  >
-                    <InfoIcon/>
-                  </Button>
+              <Button
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={this.handleInfoOpen}
+                className={classNames(classes.menuButton, this.state.open && classes.hide)}
+              >
+                <InfoIcon/>
+              </Button>
 
             </Toolbar>
           </AppBar>

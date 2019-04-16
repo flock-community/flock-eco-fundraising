@@ -8,15 +8,12 @@ import Fab from '@material-ui/core/Fab';
 import Card from '@material-ui/core/Card';
 import Paper from '@material-ui/core/Paper';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
 import AddIcon from '@material-ui/icons/Add';
 
 import DonationTable from "./DonationTable";
 import DonationDialog from "./DonationDialog";
-
-import AuthorityUtil from '../utils/AuthorityUtil'
 
 const styles = theme => ({
   tablePaper: {

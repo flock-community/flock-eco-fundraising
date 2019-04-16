@@ -109,7 +109,7 @@ class DonationFeature extends React.Component {
                 </Typography>
                 {Object.keys(this.state.data.totalDonationsOnce).map(key => {
                   return (<Typography component="p" variant="body1">
-                      {key}: {this.money.format(this.state.data.totalDonationsOnce[key])}
+                    {key}: {this.money.format(this.state.data.totalDonationsOnce[key])}
                   </Typography>)
                 })}
               </CardContent>
