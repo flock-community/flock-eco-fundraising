@@ -11,7 +11,7 @@ data class Donation(
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0,
 
-        val destination: String?,
+        val destination: String? = null,
 
         @ManyToOne()
         val member: Member?,
