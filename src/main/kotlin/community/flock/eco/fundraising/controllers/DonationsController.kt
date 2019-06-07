@@ -18,7 +18,9 @@ import community.flock.eco.fundraising.repositories.DonationRepository
 import community.flock.eco.fundraising.service.MemberFieldService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -90,7 +92,13 @@ class DonationsController(
     fun findAll(
             @RequestParam("s") search: String = "",
             page: Pageable): ResponseEntity<List<Donation>> {
-        val res = donationRepository.findBySearch(search, page)
+        val res = if (search.isEmpty()) {
+            val sort = Sort.by(Sort.Direction.DESC,"id")
+            val pageSort = PageRequest.of(page.pageNumber, page.pageSize, sort)
+            donationRepository.findAll(pageSort)
+        } else {
+            donationRepository.findBySearch(search, page)
+        }
         val headers = HttpHeaders()
         headers.set("x-page", page.pageNumber.toString())
         headers.set("x-total", res.totalElements.toString())

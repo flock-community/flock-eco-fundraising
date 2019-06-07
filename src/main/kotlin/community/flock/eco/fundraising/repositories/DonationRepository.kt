@@ -17,14 +17,6 @@ interface DonationRepository : PagingAndSortingRepository<Donation, Long>, JpaSp
             "LEFT JOIN FETCH don.member mem " +
             "LEFT JOIN FETCH don.mandate man " +
             "LEFT JOIN FETCH mem.groups " +
-            "LEFT JOIN FETCH mem.fields ")
-    override fun findAll(): List<Donation>
-
-    @Query("SELECT distinct don " +
-            "FROM Donation don " +
-            "LEFT JOIN FETCH don.member mem " +
-            "LEFT JOIN FETCH don.mandate man " +
-            "LEFT JOIN FETCH mem.groups " +
             "LEFT JOIN FETCH mem.fields " +
             "WHERE mem.id = ?1")
     fun findByMemberId(id: Long): List<Donation>
@@ -45,16 +37,14 @@ interface DonationRepository : PagingAndSortingRepository<Donation, Long>, JpaSp
             "LEFT JOIN FETCH don.mandate man " +
             "LEFT JOIN FETCH mem.groups " +
             "LEFT JOIN FETCH mem.fields " +
-            "WHERE mem = NULL " +
-            "OR mem.firstName LIKE %?1% " +
+            "WHERE mem.firstName LIKE %?1% " +
             "OR mem.surName LIKE %?1% " +
             "OR mem.email LIKE %?1% " +
             "ORDER BY mem.surName",
             countQuery = "SELECT COUNT(don) " +
                     "FROM Donation don " +
                     "LEFT JOIN don.member mem " +
-                    "WHERE don.member = NULL " +
-                    "OR mem.firstName LIKE %?1% " +
+                    "WHERE  mem.firstName LIKE %?1% " +
                     "OR mem.surName LIKE %?1% " +
                     "OR mem.email LIKE %?1% ")
     fun findBySearch(search: String, page: Pageable): Page<Donation>

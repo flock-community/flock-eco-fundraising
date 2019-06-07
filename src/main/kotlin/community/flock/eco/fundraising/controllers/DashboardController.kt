@@ -31,9 +31,16 @@ class DashboardController(
             val totalMembers: Int,
             val totalMandates: Int,
             val newMembers: List<Member>,
-            val newDonations: List<Donation>,
-            val totalDonationsDestination: Map<String, Double>
+            val newDonationsOnce: List<Donation>,
+            val newDonationsRecurring: List<Donation>,
+            val totalDonationsDestinationOnce: Map<String, Double>
     )
+
+    fun isSuccess(mandate: PaymentMandate) = mandate.transactions
+            .any { transaction -> transaction.status == PaymentTransactionStatus.SUCCESS }
+
+    fun isOnce(mandate: PaymentMandate) = arrayOf(IDEAL, CREDIT_CARD).contains(mandate.type)
+    fun isRecurring(mandate: PaymentMandate) = arrayOf(SEPA).contains(mandate.type)
 
     @GetMapping()
     fun index(): DashboardModel {
@@ -44,8 +51,9 @@ class DashboardController(
                 totalMandates = countMandate(mandates),
                 totalMembers = countMembers(),
                 newMembers = newMembers(),
-                newDonations = newDonations(),
-                totalDonationsDestination = totalDonationsDestination()
+                newDonationsOnce = newDonationsOnce(),
+                newDonationsRecurring = newDonationsRecurring(),
+                totalDonationsDestinationOnce = totalDonationsDestinationOnce(mandates)
         )
     }
 
@@ -57,11 +65,21 @@ class DashboardController(
                 .toList()
     }
 
-    fun newDonations(): List<Donation> {
+    fun newDonationsOnce(): List<Donation> {
         val sort = Sort(Sort.Direction.DESC, "id")
-        val page = PageRequest.of(0, 5, sort)
-        return donationRepository.findAll(page)
-                .toList()
+        val page = PageRequest.of(0, 15, sort)
+        return donationRepository.findAll(page).content
+                .filter { donation -> isOnce(donation.mandate) }
+                .filter { donation -> isSuccess(donation.mandate) }
+                .take(5)
+    }
+
+    fun newDonationsRecurring(): List<Donation> {
+        val sort = Sort(Sort.Direction.DESC, "id")
+        val page = PageRequest.of(0, 15, sort)
+        return donationRepository.findAll(page).content
+                .filter { donation -> isRecurring(donation.mandate) }
+                .take(5)
     }
 
     fun countMembers(): Int {
@@ -97,26 +115,32 @@ class DashboardController(
                 .filter { it.created.isAfter(now.minusYears(1)) }
                 .filter { it.status == PaymentTransactionStatus.SUCCESS }
                 .groupBy { it.created.month.name }
-                .mapValues { (month, transactions) -> transactions
-                        .sumByDouble { it -> calculateAmount(it.mandate) } }
+                .mapValues { (month, transactions) ->
+                    transactions
+                            .sumByDouble { transaction -> transaction.amount }
+                }
 
     }
 
-    fun totalDonationsDestination(): Map<String, Double> {
+    fun totalDonationsDestinationOnce(mandates: List<PaymentMandate>): Map<String, Double> {
         return donationRepository.findAll()
-                .filter { it.destination != null }
-                .groupBy { it.destination ?: "" }
-                .mapValues { (destination, donations) -> donations.sumByDouble { it -> it.mandate.amount } }
+                .filter { isOnce(it.mandate) }
+                .filter { isSuccess(it.mandate) }
+                .groupBy { it.destination ?: "Unknown" }
+                .mapValues { (destination, donations) ->
+                    donations
+                            .sumByDouble { it -> it.mandate.amount }
+                }
 
 
     }
 
-    private fun calculateAmount(mandate:PaymentMandate) = when (mandate.frequency) {
-            PaymentFrequency.ONCE -> mandate.amount
-            PaymentFrequency.MONTHLY -> mandate.amount * 12
-            PaymentFrequency.QUARTERLY -> mandate.amount * 4
-            PaymentFrequency.HALF_YEARLY -> mandate.amount * 2
-            PaymentFrequency.YEARLY -> mandate.amount
-        }
+    private fun calculateAmount(mandate: PaymentMandate) = when (mandate.frequency) {
+        PaymentFrequency.ONCE -> mandate.amount
+        PaymentFrequency.MONTHLY -> mandate.amount * 12
+        PaymentFrequency.QUARTERLY -> mandate.amount * 4
+        PaymentFrequency.HALF_YEARLY -> mandate.amount * 2
+        PaymentFrequency.YEARLY -> mandate.amount
+    }
 
 }
