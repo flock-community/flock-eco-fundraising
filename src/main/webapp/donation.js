@@ -200,6 +200,7 @@ jQuery(document).ready(function () {
     var amountInput = document.querySelector('#other-amount-input input');
 
     var groupInput = document.querySelector('#group');
+    var destinationInput = document.querySelector('#destination');
 
     var amount;
     if (amountSelectValue.value === 'other') {
@@ -225,7 +226,8 @@ jQuery(document).ready(function () {
       },
       newsletter: newsletter,
       agreedOnTerms: agreedOnTerms,
-      group: groupInput && groupInput.value
+      group: groupInput && groupInput.value,
+      destination: destinationInput && destinationInput.value
     };
     if (!anonymous) {
       // Get personal data

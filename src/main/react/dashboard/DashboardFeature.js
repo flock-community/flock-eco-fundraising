@@ -118,11 +118,11 @@ class DonationFeature extends React.Component {
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
-                  Total donations by destination
+                  Total donations by destination once
                 </Typography>
-                {Object.keys(this.state.data.totalDonationsDestination).map(key => {
+                {Object.keys(this.state.data.totalDonationsDestinationOnce).map(key => {
                   return (<Typography component="p" variant="body1">
-                    {key}: {this.money.format(this.state.data.totalDonationsDestination[key])}
+                    {key}: {this.money.format(this.state.data.totalDonationsDestinationOnce[key])}
                   </Typography>)
                 })}
               </CardContent>
@@ -154,12 +154,33 @@ class DonationFeature extends React.Component {
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
-                  Donations
+                  Donations Once
                 </Typography>
               </CardContent>
               <Table>
                 <TableBody>
-                  {this.state.data.newDonations.map(item => {
+                  {this.state.data.newDonationsOnce.map(item => {
+                    return (
+                      <TableRow key={item.id} onClick={this.handleMemberClick(item.member)}>
+                        <TableCell>{this.toName(item.member)}</TableCell>
+                        <TableCell>{this.money.format(item.mandate.amount)}</TableCell>
+                        <TableCell>{item.mandate.type}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </Card>
+
+            <Card className={classes.card}>
+              <CardContent>
+                <Typography component="h5" variant="h5">
+                  Donations Recurring
+                </Typography>
+              </CardContent>
+              <Table>
+                <TableBody>
+                  {this.state.data.newDonationsRecurring.map(item => {
                     return (
                       <TableRow key={item.id} onClick={this.handleMemberClick(item.member)}>
                         <TableCell>{this.toName(item.member)}</TableCell>
