@@ -47,7 +47,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .antMatchers(HttpMethod.POST, "/api/payment/buckaroo/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/mailchimp/webhook").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/mailchimp/webhook").permitAll()
-                .anyRequest().hasRole("USER")
+                .anyRequest().authenticated()
 
         http
                 .cors()
