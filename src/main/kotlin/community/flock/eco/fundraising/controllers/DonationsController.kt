@@ -70,7 +70,7 @@ class DonationsController(
 
     data class DonationForm(
             val mandate: PaymentMandate,
-            val member: Member,
+            val member: Member?,
             val destination: String? = null
     )
 
