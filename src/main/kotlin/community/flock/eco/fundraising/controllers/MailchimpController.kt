@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+const val INTREST_GROUP_TITEL = "Doneasy"
+
 @RestController
 @RequestMapping("/api/mailchimp")
 class MailchimpController(
@@ -24,6 +26,11 @@ class MailchimpController(
         private val memberGroupRepository: MemberGroupRepository,
         private val mailchimpClient: MailchimpClient
 ) {
+
+    enum class Interests(val key: String) {
+        TRANSACTIONAL_EMAILS("Transactional emails"),
+        NEWSLETTER("Newsletter")
+    }
 
     companion object {
         val logger = LoggerFactory.getLogger(MailchimpController::class.java)
@@ -58,6 +65,20 @@ class MailchimpController(
                 }
                 .let {
                     memberRepository.saveAll(it)
+                }
+    }
+
+    private fun findInterests(): Map<Interests, String>? {
+        return mailchimpClient.getInterestsCategories()
+                .find { INTREST_GROUP_TITEL == it.title }
+                ?.let { category ->
+                    mailchimpClient.getInterests(category.id)
+                            .mapNotNull { interest ->
+                                Interests.values()
+                                        .find { it.key == interest.name }
+                                        ?.let { it to interest.id }
+                            }
+                            .toMap()
                 }
     }
 
@@ -96,24 +117,27 @@ class MailchimpController(
     }
 
     private fun constructMailchimpMember(member: Member): MailchimpMember {
+        val intrests = findInterests()
+        val newsletter = member.fields
+                .getOrDefault("newsletter", "false")
+                .let { it.toBoolean() }
+
         return MailchimpMember(
                 firstName = member.infix
                         ?.let { member.firstName + " " + it }
                         ?: member.firstName,
                 lastName = member.surName,
                 email = member.email ?: "",
-                status = member.fields
-                        .getOrDefault("newsletter", "false")
-                        .let {
-                            if (it == "true")
-                                MailchimpMemberStatus.SUBSCRIBED
-                            else
-                                MailchimpMemberStatus.UNSUBSCRIBED
-                        },
+                status = MailchimpMemberStatus.SUBSCRIBED,
                 tags = member.groups
                         .map { it.code }
-                        .toSet()
-
+                        .toSet(),
+                interests = intrests
+                        ?.map {
+                            it.value to true
+                        }
+                        ?.toMap()
+                        ?: mapOf()
         )
     }
 }

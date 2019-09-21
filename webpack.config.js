@@ -1,17 +1,24 @@
 const path = require('path')
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 
-const htmlPlugin = new HtmlWebPackPlugin({
+const indexPage = new HtmlWebPackPlugin({
   template: path.resolve(__dirname, 'src/main/react/index.html'),
-  filename: "./index.html"
+  filename: "./index.html",
+  chunks: ["main"]
+});
+
+const formPage = new HtmlWebPackPlugin({
+  template: path.resolve(__dirname, 'src/main/react/index.html'),
+  filename: "./form.html",
+  chunks: ["form"]
 });
 
 module.exports = {
 
-  entry: [
-    'whatwg-fetch',
-    path.resolve(__dirname, 'src/main/react')
-  ],
+  entry: {
+    main: path.resolve(__dirname, 'src/main/react/index'),
+    form: path.resolve(__dirname, 'src/main/react/form')
+  },
 
   output: {
     path: path.resolve(__dirname, 'src/main/webapp')
@@ -25,10 +32,12 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: [
-              'env',
-              'react',
-              'stage-2'
+            "plugins": [
+              "@babel/plugin-proposal-class-properties"
+            ],
+            "presets": [
+              "@babel/preset-env",
+              "@babel/preset-react"
             ]
           }
         }
@@ -36,7 +45,7 @@ module.exports = {
     ]
   },
 
-  plugins: [htmlPlugin],
+  plugins: [indexPage,formPage],
 
   devServer: {
     port: 3000,
@@ -44,6 +53,8 @@ module.exports = {
       '/api/**': 'http://localhost:8080',
       '/tasks/**': 'http://localhost:8080',
       '/login**': 'http://localhost:8080',
+      '/login/**': 'http://localhost:8080',
+      '/oauth2/**': 'http://localhost:8080',
       '/configuration': 'http://localhost:8080',
       '/_ah/**': 'http://localhost:8080',
     }

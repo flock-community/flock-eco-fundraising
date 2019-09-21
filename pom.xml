@@ -92,6 +92,7 @@
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-mailchimp</artifactId>
+            <version>1.4.1-fa25efc</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
