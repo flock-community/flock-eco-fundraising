@@ -1,4 +1,5 @@
 language: java
+
 jdk:
 - oraclejdk8
 
@@ -11,4 +12,4 @@ before_install:
   - npm config set cache "$HOME/.npm-cache"
 
 script:
-  - mvn verify
+  - mvn surefire:test
