@@ -93,7 +93,7 @@ class DonationsController(
             @RequestParam("s") search: String = "",
             page: Pageable): ResponseEntity<List<Donation>> {
         val res = if (search.isEmpty()) {
-            val sort = Sort.by(Sort.Direction.DESC,"id")
+            val sort = Sort.by(Sort.Direction.DESC, "id")
             val pageSort = PageRequest.of(page.pageNumber, page.pageSize, sort)
             donationRepository.findAll(pageSort)
         } else {
@@ -214,7 +214,8 @@ class DonationsController(
     fun create(@RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         val donation = Donation(
-                member = memberService.create(form.member),
+                member = form.member
+                        ?.let { memberService.create(it) },
                 mandate = paymentMandateRepository.save(form.mandate),
                 destination = form.destination
         ).let {
@@ -230,7 +231,8 @@ class DonationsController(
         return donationRepository.findById(id)
                 .map { donation ->
                     donation.copy(
-                            member = memberService.update(form.member.id, form.member),
+                            member = form.member
+                                    ?.let { memberService.update(form.member.id, it) },
                             mandate = paymentMandateRepository.save(form.mandate),
                             destination = form.destination
                     ).let {
