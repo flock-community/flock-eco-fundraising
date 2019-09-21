@@ -70,7 +70,7 @@ class DonationsController(
 
     data class DonationForm(
             val mandate: PaymentMandate,
-            val member: Member,
+            val member: Member?,
             val destination: String? = null
     )
 
@@ -214,7 +214,8 @@ class DonationsController(
     fun create(@RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         val donation = Donation(
-                member = memberService.create(form.member),
+                member = form.member
+                        ?.let { memberService.create(it) },
                 mandate = paymentMandateRepository.save(form.mandate),
                 destination = form.destination
         ).let {
@@ -230,7 +231,8 @@ class DonationsController(
         return donationRepository.findById(id)
                 .map { donation ->
                     donation.copy(
-                            member = memberService.update(form.member.id, form.member),
+                            member = form.member
+                                    ?.let { memberService.update(form.member.id, it) },
                             mandate = paymentMandateRepository.save(form.mandate),
                             destination = form.destination
                     ).let {
