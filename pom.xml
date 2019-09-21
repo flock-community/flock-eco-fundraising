@@ -88,6 +88,7 @@
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>
             <artifactId>flock-eco-feature-payment</artifactId>
+            <version>1.4.16</version>
         </dependency>
         <dependency>
             <groupId>com.github.flock-community.flock-eco</groupId>

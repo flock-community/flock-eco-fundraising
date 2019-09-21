@@ -231,7 +231,8 @@ class DonationsController(
         return donationRepository.findById(id)
                 .map { donation ->
                     donation.copy(
-                            member = form.member?.let { memberService.update(id, it) },
+                            member = form.member
+                                    ?.let { memberService.update(form.member.id, it) },
                             mandate = paymentMandateRepository.save(form.mandate),
                             destination = form.destination
                     ).let {
