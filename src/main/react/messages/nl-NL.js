@@ -22,6 +22,8 @@ export default {
 
   "form.donation.member.phoneNumber.label": "Telefoon nummer",
 
-  "form.donation.member.email.label": "Emailadres"
+  "form.donation.member.email.label": "Emailadres",
+
+  "form.submit": "Bevestig"
 
 }

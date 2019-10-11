@@ -90,7 +90,6 @@ function DonationForm({onSubmit}) {
     },[state.locale])
 
     const handleSwitchLocal = (value) => {
-        console.log(value)
         setState({...state, locale: value.name})
     }
 
@@ -108,7 +107,7 @@ function DonationForm({onSubmit}) {
             <DonationPaymentCreditcardForm {...props} />
             <Typography>Wat zijn uw gegevens?</Typography>
             <DonationMemberForm {...props}/>
-            <Button type="submit" variant="contained" color="primary">Bevestig</Button>
+            <Button type="submit" variant="contained" color="primary">{state.intl.formatMessage({id: 'form.submit'})}</Button>
         </Form>)
     }
 
