@@ -1,6 +1,7 @@
 package community.flock.eco.fundraising.controllers
 
-import community.flock.eco.feature.user.services.UserAuthorityService
+import community.flock.eco.feature.user.model.User
+import community.flock.eco.feature.user.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.context.config.annotation.RefreshScope
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -9,13 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.security.Principal
+import java.util.*
 
 
 @RefreshScope
 @RestController
 @RequestMapping("/configuration")
 class ConfigurationController(
-        val userAuthorityService: UserAuthorityService) {
+        val userRepository: UserRepository) {
 
     @Value("\${flock.fundraising.name}")
     lateinit var name: String
@@ -28,6 +30,19 @@ class ConfigurationController(
 
     @GetMapping
     fun index(principal: Principal?): Configuration {
+        userRepository.findAll()
+                .filter { it.code == null }
+                .map { user ->
+                    User(
+                            id = user.id,
+                            code = UUID.randomUUID().toString(),
+                            email = user.email,
+                            name = user.name,
+                            enabled = true,
+                            authorities = user.authorities)
+                }
+                .apply { userRepository.saveAll(this) }
+
         return Configuration(
                 applicationName = name,
                 isLoggedIn = principal != null,

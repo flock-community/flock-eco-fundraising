@@ -74,7 +74,7 @@ class DonationFeature extends React.Component {
           action={this.state.memberAction}
           onComplete={this.handleComplete}/>
 
-        <Grid container spacing={16}>
+        <Grid container spacing={1}>
           <Grid item xs={12} md={4}>
 
             <Card className={classes.card}>

@@ -24,7 +24,7 @@ class PaymentBankAccountForm extends React.Component {
 
     return (
 
-      <Grid container spacing={16}>
+      <Grid container spacing={1}>
 
         <Grid item xs={4}>
           <TextValidator

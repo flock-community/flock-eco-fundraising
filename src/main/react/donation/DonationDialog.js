@@ -214,7 +214,7 @@ class DonationDialog extends React.Component {
 
             {this.state.mandate.frequency !== 'ONCE' &&
             <PaymentMandateForm value={this.state.mandate} onChange={this.handleChangeMandate}/>}
-            <Grid container spacing={16}>
+            <Grid container spacing={1}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth

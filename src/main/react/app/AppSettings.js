@@ -26,7 +26,7 @@ class AppSettings extends React.Component {
     return (
       <Grid
         container
-        spacing={16}
+        spacing={1}
         wrap="nowrap"
       >
         <Grid item xs={3}>
