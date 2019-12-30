@@ -38,7 +38,7 @@ class SystemConfigurationFeature extends React.Component {
           onSubmit={this.handleSubmit}
           onError={errors => console.log(errors)}
         >
-          <Grid container spacing={16}>
+          <Grid container spacing={1}>
             <Grid item xs={5}>
               <TextValidator
                 fullWidth

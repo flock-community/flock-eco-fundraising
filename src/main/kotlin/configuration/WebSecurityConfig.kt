@@ -33,13 +33,20 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         userAuthorityService.addAuthority(DonationsAuthority::class.java)
 
         http
+                .headers().frameOptions().sameOrigin()
+        http
                 .csrf().disable()
         http
                 .authorizeRequests()
+                .antMatchers("/index.html").permitAll()
+                .antMatchers("/main.*.js").permitAll()
+
                 .antMatchers("/configuration").permitAll()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/_ah/**").permitAll()
+                .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/actuator/**").permitAll()
+
                 .antMatchers(HttpMethod.GET, "/tasks/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/donations/donate").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/donations/donate").permitAll()

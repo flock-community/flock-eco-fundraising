@@ -18,7 +18,7 @@ const styles = theme => ({
   tablePaper: {
     marginBottom: 50,
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing(3),
     overflowX: 'auto',
   },
   table: {
@@ -28,7 +28,7 @@ const styles = theme => ({
     position: 'fixed',
     right: 20,
     bottom: 20,
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
   }
 });
 
@@ -100,11 +100,11 @@ class TransactionFeature extends React.Component {
 
     return (
       <React.Fragment>
-        <Grid container spacing={16}>
+        <Grid container spacing={1}>
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Grid container spacing={0}>
+                <Grid container>
 
                   <Grid item xs={2}>
                     <Typography variant="h5" gutterBottom>

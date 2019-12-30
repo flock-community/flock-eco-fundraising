@@ -14,25 +14,30 @@ module.exports = {
   ],
 
   output: {
-    path: path.resolve(__dirname, 'src/main/webapp')
+    publicPath: "/",
+    filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, 'target/classes/static')
   },
 
   module: {
     rules: [
       {
         test: /\.js|jsx$/,
-        exclude: /node_modules\/(?!(@flock-eco)\/).*/,
+        exclude: /node_modules[\\\/](?!(@flock-eco)[\\\/]).*/,
         use: {
           loader: "babel-loader",
           options: {
-            presets: [
-              'env',
-              'react',
-              'stage-2'
+            "plugins": [
+              "@babel/plugin-proposal-class-properties",
+              "@babel/plugin-proposal-object-rest-spread"
+            ],
+            "presets": [
+              "@babel/preset-env",
+              "@babel/preset-react"
             ]
           }
         }
-      }
+      },
     ]
   },
 

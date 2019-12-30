@@ -190,7 +190,6 @@ class ExcelLoadData(
         User(
                 name = name,
                 email = email,
-                reference = email,
                 authorities = authorities
                         .map { it.toName() }
                         .toSet()

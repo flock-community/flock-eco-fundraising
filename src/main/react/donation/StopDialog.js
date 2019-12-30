@@ -68,7 +68,7 @@ class StopDialog extends React.Component {
         <DialogContent>
 
           <ValidatorForm id="sepa-download-form" onSubmit={this.handleSubmit}>
-            <Grid container spacing={16}>
+            <Grid container spacing={1}>
               <Grid item xs={12}>
                 <SelectValidator
                   required
