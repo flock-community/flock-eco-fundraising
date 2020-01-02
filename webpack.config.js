@@ -47,6 +47,8 @@ module.exports = {
     port: 3000,
     proxy: {
       '/api/**': 'http://localhost:8080',
+      '/oauth2/**': 'http://localhost:8080',
+      '/login/**': 'http://localhost:8080',
       '/tasks/**': 'http://localhost:8080',
       '/login**': 'http://localhost:8080',
       '/configuration': 'http://localhost:8080',

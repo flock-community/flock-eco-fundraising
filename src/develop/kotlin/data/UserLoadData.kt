@@ -12,8 +12,8 @@ import community.flock.eco.feature.user.services.UserAuthorityService
 import community.flock.eco.feature.user.services.UserService
 import community.flock.eco.fundraising.model.Donation
 import community.flock.eco.fundraising.repositories.DonationRepository
-import community.flock.eco.fundraising.service.GenerateTransactionsService
-import community.flock.eco.fundraising.service.MemberFieldService
+import community.flock.eco.fundraising.services.GenerateTransactionsService
+import community.flock.eco.fundraising.services.MemberFieldService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
