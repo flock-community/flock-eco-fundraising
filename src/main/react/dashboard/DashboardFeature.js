@@ -75,7 +75,7 @@ class DonationFeature extends React.Component {
           onComplete={this.handleComplete}/>
 
         <Grid container spacing={1}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} lg={6}>
 
             <Card className={classes.card}>
               <CardContent>
@@ -144,7 +144,7 @@ class DonationFeature extends React.Component {
 
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} lg={6}>
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
