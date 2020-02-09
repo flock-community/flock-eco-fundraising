@@ -9,8 +9,10 @@ import community.flock.eco.feature.member.controllers.CreateMemberEvent
 import community.flock.eco.feature.member.controllers.MemberEvent
 import community.flock.eco.feature.member.controllers.UpdateMemberEvent
 import community.flock.eco.feature.member.model.Member
+import community.flock.eco.feature.member.model.MemberStatus
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
 import community.flock.eco.feature.member.repositories.MemberRepository
+import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.fundraising.services.MemberFieldService.MemberFields.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -20,6 +22,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class MailchimpService(
+        private val memberService: MemberService,
         private val memberRepository: MemberRepository,
         private val memberGroupRepository: MemberGroupRepository,
         private val mailchimpClient: MailchimpClient
@@ -30,6 +33,11 @@ class MailchimpService(
     enum class Interest {
         TRANSACTIONAL,
         NEWSLETTER
+    }
+
+    fun Member.isActive(): Boolean {
+        val active = listOf(MemberStatus.DISABLED, MemberStatus.ACTIVE, MemberStatus.NEW)
+        return active.contains(this.status)
     }
 
     @Value("\${flock.eco.feature.mailchimp.listId:}")
@@ -64,16 +72,45 @@ class MailchimpService(
     @EventListener
     fun handleMailchimpWebhookEvent(event: MailchimpWebhookEvent) {
         if (listOf(SUBSCRIBE, UNSUBSCRIBE, PROFILE).contains(event.type)) {
-            memberRepository.findByEmail(event.email)
-                    .map {
-                        it.copy(fields = it.fields
-                                .plus(NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests))
-                                .plus(TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests))
-                                .plus(MAILCHIMP_STATUS.key to event.type.getStatus(it.fields)))
-                    }
-                    .let {
-                        memberRepository.saveAll(it)
-                    }
+            val activeList = memberService.findAllByEmail(event.email)
+                    .filter { it.isActive() }
+
+            if (activeList.isNotEmpty()) {
+                activeList
+                        .map {
+                            it.copy(
+                                    fields = it.fields
+                                            .plus(NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests))
+                                            .plus(TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests))
+                                            .plus(MAILCHIMP_STATUS.key to (event.type.getStatus()?.name
+                                                    ?: it.fields.getValue(MAILCHIMP_STATUS.key))))
+                        }
+                        .map {
+                            if (activeList.size == 1) {
+                                it.copy(
+                                        firstName = event.firstName,
+                                        surName = event.lastName
+                                )
+                            } else {
+                                it
+                            }
+                        }
+                        .let {
+                            memberRepository.saveAll(it)
+                        }
+            } else {
+                Member(
+                        firstName = event.firstName,
+                        surName = event.lastName,
+                        email = event.email,
+                        status = MemberStatus.NEW,
+                        fields = mapOf(
+                                NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests),
+                                TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests),
+                                MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
+                        )
+                ).run { memberService.create(this) }
+            }
         }
     }
 
@@ -85,7 +122,7 @@ class MailchimpService(
     }
 
     fun syncMembers() {
-        memberRepository
+        memberService
                 .findAll()
                 .forEach {
                     syncMember(it)
@@ -148,13 +185,10 @@ class MailchimpService(
         )
     }
 
-    private fun MailchimpWebhookEventType.getStatus(fields: Map<String, String>) = when (this) {
-        SUBSCRIBE -> MailchimpMemberStatus.SUBSCRIBED.name
-        UNSUBSCRIBE -> MailchimpMemberStatus.UNSUBSCRIBED.name
-        PROFILE -> fields.getOrDefault(MAILCHIMP_STATUS.key, MailchimpMemberStatus.SUBSCRIBED.name)
-        UPEMAIL -> fields.getOrDefault(MAILCHIMP_STATUS.key, MailchimpMemberStatus.SUBSCRIBED.name)
-        CLEANED -> fields.getOrDefault(MAILCHIMP_STATUS.key, MailchimpMemberStatus.SUBSCRIBED.name)
-        CAMPAIGN -> fields.getOrDefault(MAILCHIMP_STATUS.key, MailchimpMemberStatus.SUBSCRIBED.name)
+    private fun MailchimpWebhookEventType.getStatus(): MailchimpMemberStatus? = when (this) {
+        SUBSCRIBE -> MailchimpMemberStatus.SUBSCRIBED
+        UNSUBSCRIBE -> MailchimpMemberStatus.UNSUBSCRIBED
+        else -> null
     }
 
     private infix fun Interest.inList(interests: Set<String>) = interests
