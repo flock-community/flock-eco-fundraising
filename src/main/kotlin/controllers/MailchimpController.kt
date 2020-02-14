@@ -11,109 +11,41 @@ import community.flock.eco.feature.member.controllers.UpdateMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
 import community.flock.eco.feature.member.repositories.MemberRepository
+import community.flock.eco.fundraising.services.MailchimpService
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.ModelAndView
+import javax.annotation.PostConstruct
 
 @RestController
 @RequestMapping("/api/mailchimp")
 class MailchimpController(
-        private val memberRepository: MemberRepository,
-        private val memberGroupRepository: MemberGroupRepository,
-        private val mailchimpClient: MailchimpClient
+        private val mailchimpService: MailchimpService
 ) {
 
-    companion object {
-        val logger = LoggerFactory.getLogger(MailchimpController::class.java)
-    }
+    @Value("\${flock.eco.feature.mailchimp.listId:}")
+    private lateinit var listId: String
 
-    @EventListener
-    fun handleMemberEvent(event: MemberEvent) {
-        val classes = arrayOf(
-                CreateMemberEvent::class,
-                UpdateMemberEvent::class)
-        val member = event.member
-        if (event::class in classes && member.email != null) {
-            syncMember(member)
-        }
+    @RequestMapping("/members")
+    fun getMembers(): ModelAndView {
+        return ModelAndView("forward:/api/mailchimp/lists/$listId/members");
 
     }
 
-    @EventListener
-    fun handleMailchimpWebhookEvent(event: MailchimpWebhookEvent) {
+    @RequestMapping("/interest-categories")
+    fun getInterestCategories(): ModelAndView {
+        return ModelAndView("forward:/api/mailchimp/lists/$listId/interest-categories")
 
-        memberRepository.findByEmail(event.email)
-                .map {
-                    val value = when (event.type) {
-                        MailchimpWebhookEventType.SUBSCRIBE -> true
-                        MailchimpWebhookEventType.UNSUBSCRIBE -> false
-                        else -> false
-                    }
-                    it.fields
-                            .plus("newsletter" to value.toString())
-                            .let { fields -> it.copy(fields = fields) }
-
-                }
-                .let {
-                    memberRepository.saveAll(it)
-                }
     }
 
     @GetMapping("/sync")
     fun sync() {
-        syncGroups()
-        memberRepository
-                .findAll()
-                .forEach {
-                    syncMember(it)
-                }
-    }
+        mailchimpService.syncGroups()
+        mailchimpService.syncMembers()
 
-    private fun syncGroups() {
-        memberGroupRepository.findAll()
-                .forEach {
-                    mailchimpClient.postSegment(it.code)
-                }
-    }
-
-    private fun syncMember(member: Member) {
-        try {
-            member.email?.also { email ->
-                val new = constructMailchimpMember(member)
-                val current = mailchimpClient.getMember(email)
-                if (current != null) {
-                    mailchimpClient.putMember(new)
-                    mailchimpClient.putTags(email, new.tags, current.tags.minus(new.tags))
-                } else {
-                    mailchimpClient.postMember(new)
-                }
-            }
-        } catch (ex: Exception) {
-            logger.info(ex.message)
-        }
-    }
-
-    private fun constructMailchimpMember(member: Member): MailchimpMember {
-        return MailchimpMember(
-                firstName = member.infix
-                        ?.let { member.firstName + " " + it }
-                        ?: member.firstName,
-                lastName = member.surName,
-                email = member.email ?: "",
-                status = member.fields
-                        .getOrDefault("newsletter", "false")
-                        .let {
-                            if (it == "true")
-                                MailchimpMemberStatus.SUBSCRIBED
-                            else
-                                MailchimpMemberStatus.UNSUBSCRIBED
-                        },
-                tags = member.groups
-                        .map { it.code }
-                        .toSet()
-
-        )
     }
 }

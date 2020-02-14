@@ -1,6 +1,7 @@
 package community.flock.eco.fundraising.controllers
 
 import community.flock.eco.core.utils.toResponse
+import community.flock.eco.feature.mailchimp.model.MailchimpMemberStatus
 import community.flock.eco.feature.member.controllers.MergeMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberGroup
@@ -15,7 +16,8 @@ import community.flock.eco.feature.payment.services.PaymentBuckarooService
 import community.flock.eco.feature.payment.services.PaymentSepaService
 import community.flock.eco.fundraising.model.Donation
 import community.flock.eco.fundraising.repositories.DonationRepository
-import community.flock.eco.fundraising.service.MemberFieldService
+import community.flock.eco.fundraising.services.MemberFieldService
+import community.flock.eco.fundraising.services.MemberFieldService.MemberFields.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
@@ -44,12 +46,6 @@ class DonationsController(
 
     @Value("\${flock.fundraising.donations.failureUrl:@null}")
     lateinit var failureUrl: String
-
-    companion object {
-        const val FIELD_NEWSLETTER = "newsletter"
-        const val FIELD_AGREED_ON_TERMS = "agreed_on_terms"
-        const val TERMINATION_REASON = "termination_reason"
-    }
 
     data class Donate(
             val payment: Payment,
@@ -133,8 +129,10 @@ class DonationsController(
             it.copy(
                     groups = groupDonation?.let { setOf(it) } ?: setOf(),
                     fields = mapOf(
-                            FIELD_NEWSLETTER to donate.newsletter.toString().toLowerCase(),
-                            FIELD_AGREED_ON_TERMS to donate.agreedOnTerms.toString().toLowerCase()
+                            NEWSLETTER.key to donate.newsletter.toString().toLowerCase(),
+                            AGREED_ON_TERMS.key to donate.agreedOnTerms.toString().toLowerCase(),
+                            TRANSACTIONAL_MAIL.key to "true",
+                            MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
                     )
             ).let {
                 memberService.create(it)
@@ -253,7 +251,7 @@ class DonationsController(
             form.reason?.let { reason ->
                 donation.member?.let { member ->
                     member
-                            .copy(fields = member.fields + (TERMINATION_REASON to reason))
+                            .copy(fields = member.fields + (TERMINATION_REASON.key to reason))
                             .let { memberService.update(it.id, it) }
                 }
             }

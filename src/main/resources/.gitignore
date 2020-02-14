@@ -1,2 +1,2 @@
-bootstrap-*.properties
-application-*.properties
+bootstrap-test.properties
+application-test.properties

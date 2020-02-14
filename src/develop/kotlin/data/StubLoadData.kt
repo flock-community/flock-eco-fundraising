@@ -1,13 +1,16 @@
 package community.flock.eco.fundraising.data
 
 import community.flock.eco.core.data.LoadData
+import community.flock.eco.feature.mailchimp.model.MailchimpMemberStatus
 import community.flock.eco.feature.member.data.MemberLoadData
 import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.payment.data.PaymentLoadData
 import community.flock.eco.fundraising.model.Donation
 import community.flock.eco.fundraising.repositories.DonationRepository
-import community.flock.eco.fundraising.service.GenerateTransactionsService
-import community.flock.eco.fundraising.service.MemberFieldService
+import community.flock.eco.fundraising.services.GenerateTransactionsService
+import community.flock.eco.fundraising.services.MemberFieldService
+import community.flock.eco.fundraising.services.MemberFieldService.*
+import community.flock.eco.fundraising.services.MemberFieldService.MemberFields.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -51,12 +54,10 @@ class StubLoadData(
 
         memberData
                 .map {
-                    it.copy(
-                            fields = it.fields
-                                    .plus(
-                                            "newsletter" to if (it.id.toInt() % 2 == 0) "true" else "false"
-                                    )
-                    )
+                    it.copy(fields = it.fields
+                            .plus(NEWSLETTER.key to if (it.id.toInt() % 2 == 0) "true" else "false")
+                            .plus(TRANSACTIONAL_MAIL.key to if (it.id.toInt() % 2 == 0) "true" else "false")
+                            .plus(MAILCHIMP_STATUS.key to if (it.id.toInt() % 2 == 0) MailchimpMemberStatus.SUBSCRIBED.name else MailchimpMemberStatus.UNSUBSCRIBED.name))
                 }
                 .toList()
                 .let {

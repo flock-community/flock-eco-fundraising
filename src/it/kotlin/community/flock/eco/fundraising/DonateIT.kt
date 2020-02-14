@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.repositories.MemberRepository
+import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.feature.payment.model.PaymentBankAccount
 import community.flock.eco.feature.payment.model.PaymentFrequency
 import community.flock.eco.feature.payment.model.PaymentTransactionStatus
@@ -45,7 +46,7 @@ class DonateIT {
     lateinit var mockMvc: MockMvc
 
     @Autowired
-    lateinit var memberRepository: MemberRepository
+    lateinit var memberService: MemberService
 
     @Autowired
     lateinit var donationRepository: DonationRepository
@@ -86,18 +87,17 @@ class DonateIT {
                 .andDo(print())
                 .andExpect(status().isOk())
 
-        val memberRes = memberRepository.findByEmail(email).first()
+        val memberRes = memberService.findAllByEmail(email).first()
         val donation = donationRepository.findByMemberId(memberRes.id).first()
         val mandate = paymentMandateRepository.findById(donation.mandate.id).get()
         val transaction = paymentTransactionRepository.findByMandate(mandate).first()
 
-        assertEquals(email, memberRes.email)
+        assertEquals(email, memberRes?.email)
         assertEquals(10.0, donation.mandate.amount, 0.0)
         assertEquals(PaymentType.IDEAL, donation.mandate.type)
         assertEquals(PaymentFrequency.ONCE, donation.mandate.frequency)
         assertNull(transaction.confirmed)
         assertEquals(PaymentTransactionStatus.PENDING, transaction.status)
-
 
         // Confirm Transcation
         mockMvc.perform(post("/api/payment/buckaroo/success")
@@ -150,7 +150,7 @@ class DonateIT {
                 .andDo(print())
                 .andExpect(status().isOk())
 
-        val memberRes = memberRepository.findByEmail(email).first()
+        val memberRes = memberService.findAllByEmail(email).first()
         val donationRes = donationRepository.findByMemberId(memberRes.id).first()
         val transactionRes = paymentTransactionRepository.findByMandate(donationRes.mandate).toList()
 
@@ -166,7 +166,7 @@ class DonateIT {
     @Test
     fun donationAnoniemCreditCard() {
 
-        val initCount = memberRepository.findAll().toList().size
+        val initCount = memberService.findAll().toList().size
 
         val payment = DonationsController.Payment(
                 paymentType = PaymentType.CREDIT_CARD,
@@ -186,7 +186,7 @@ class DonateIT {
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful)
 
-        val memberRes = memberRepository.findAll().toList()
+        val memberRes = memberService.findAll().toList()
         assertEquals(initCount, memberRes.size)
 
 

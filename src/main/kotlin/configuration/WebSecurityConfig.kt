@@ -40,6 +40,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .authorizeRequests()
                 .antMatchers("/index.html").permitAll()
                 .antMatchers("/main.*.js").permitAll()
+                .antMatchers("/donataion.js").permitAll()
+                .antMatchers("/donataion.html").permitAll()
 
                 .antMatchers("/configuration").permitAll()
                 .antMatchers("/login").permitAll()

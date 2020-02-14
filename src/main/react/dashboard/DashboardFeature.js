@@ -75,7 +75,7 @@ class DonationFeature extends React.Component {
           onComplete={this.handleComplete}/>
 
         <Grid container spacing={1}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} lg={6}>
 
             <Card className={classes.card}>
               <CardContent>
@@ -105,6 +105,20 @@ class DonationFeature extends React.Component {
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
+                  Total per year
+                </Typography>
+                {Object.keys(this.state.data.totalDonationsPerYear).map(key => {
+                  return (<Typography component="p" variant="body1">
+                    {key}: {this.money.format(this.state.data.totalDonationsPerYear[key])}
+                  </Typography>)
+                })}
+              </CardContent>
+            </Card>
+
+
+            <Card className={classes.card}>
+              <CardContent>
+                <Typography component="h5" variant="h5">
                   Total once donations
                 </Typography>
                 {Object.keys(this.state.data.totalDonationsOnce).map(key => {
@@ -130,7 +144,7 @@ class DonationFeature extends React.Component {
 
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} lg={6}>
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">

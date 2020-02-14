@@ -1,4 +1,4 @@
-package community.flock.eco.fundraising.service;
+package community.flock.eco.fundraising.services;
 
 import community.flock.eco.feature.payment.model.PaymentFrequency
 import community.flock.eco.feature.payment.model.PaymentMandate
