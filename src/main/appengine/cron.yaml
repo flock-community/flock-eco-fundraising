@@ -1,0 +1,4 @@
+cron:
+  - description: "generate transactions"
+    url: /tasks/transactions
+    schedule: every 24 hours
