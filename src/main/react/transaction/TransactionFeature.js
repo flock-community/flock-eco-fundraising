@@ -124,10 +124,6 @@ class TransactionFeature extends React.Component {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={this.handleGenerateTransactions}>Generate Transactions</Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
                         onClick={this.handleDownloadSepa}>Download Sepa Xml</Button>
                     </AuthorityUtil>
                   </Grid>
