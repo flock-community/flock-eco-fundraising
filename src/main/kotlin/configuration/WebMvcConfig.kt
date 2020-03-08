@@ -33,10 +33,9 @@ class WebMvcConfig : WebMvcConfigurer {
     }
 
     override fun addCorsMappings(registry: CorsRegistry) {
-
         registry.addMapping("/api/donations/donate")
-                .allowedOrigins(cors)
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowedOrigins(*cors.split(",").toTypedArray())
+                .allowedMethods("GET", "POST")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600)
