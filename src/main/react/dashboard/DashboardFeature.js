@@ -13,7 +13,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 
-import MemberDialog from '@flock-eco/feature-member/src/main/react/member/MemberDialog'
+import {MemberDialog} from '@flock-eco/feature-member/src/main/react/member/MemberDialog'
 
 const styles = theme => ({
   card: {

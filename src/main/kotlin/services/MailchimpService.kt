@@ -5,9 +5,9 @@ import community.flock.eco.feature.mailchimp.events.MailchimpWebhookEvent
 import community.flock.eco.feature.mailchimp.events.MailchimpWebhookEventType
 import community.flock.eco.feature.mailchimp.events.MailchimpWebhookEventType.*
 import community.flock.eco.feature.mailchimp.model.*
-import community.flock.eco.feature.member.controllers.CreateMemberEvent
-import community.flock.eco.feature.member.controllers.MemberEvent
-import community.flock.eco.feature.member.controllers.UpdateMemberEvent
+import community.flock.eco.feature.member.events.CreateMemberEvent
+import community.flock.eco.feature.member.events.MemberEvent
+import community.flock.eco.feature.member.events.UpdateMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberStatus
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
@@ -16,11 +16,13 @@ import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.fundraising.services.MemberFieldService.MemberFields.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
+@ConditionalOnProperty("flock.fundraising.mailchimp.enabled", havingValue = "true", matchIfMissing = true)
 class MailchimpService(
         private val memberService: MemberService,
         private val memberRepository: MemberRepository,
@@ -109,7 +111,7 @@ class MailchimpService(
                                 TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests),
                                 MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
                         )
-                ).run { memberService.create(this) }
+                ).run { memberRepository.save(this) }
             }
         }
     }
@@ -122,7 +124,7 @@ class MailchimpService(
     }
 
     fun syncMembers() {
-        memberService
+        memberRepository
                 .findAll()
                 .forEach {
                     syncMember(it)

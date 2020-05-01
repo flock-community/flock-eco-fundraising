@@ -1,6 +1,6 @@
 package community.flock.eco.fundraising.configuration
 
-import community.flock.eco.feature.member.data.MemberLoadData
+import community.flock.eco.feature.member.develop.data.MemberLoadData
 import community.flock.eco.feature.payment.data.PaymentLoadData
 import community.flock.eco.fundraising.data.ExcelLoadData
 import community.flock.eco.fundraising.data.UserLoadData

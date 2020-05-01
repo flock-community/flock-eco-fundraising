@@ -2,14 +2,13 @@ package community.flock.eco.fundraising.data
 
 import community.flock.eco.core.data.LoadData
 import community.flock.eco.feature.mailchimp.model.MailchimpMemberStatus
-import community.flock.eco.feature.member.data.MemberLoadData
+import community.flock.eco.feature.member.develop.data.MemberLoadData
 import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.payment.data.PaymentLoadData
 import community.flock.eco.fundraising.model.Donation
 import community.flock.eco.fundraising.repositories.DonationRepository
 import community.flock.eco.fundraising.services.GenerateTransactionsService
 import community.flock.eco.fundraising.services.MemberFieldService
-import community.flock.eco.fundraising.services.MemberFieldService.*
 import community.flock.eco.fundraising.services.MemberFieldService.MemberFields.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

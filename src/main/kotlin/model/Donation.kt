@@ -13,6 +13,8 @@ data class Donation(
 
         val destination: String? = null,
 
+        val language: String? = null,
+
         @ManyToOne()
         val member: Member?,
 

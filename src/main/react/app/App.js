@@ -9,7 +9,7 @@ import DonationFeature from '../donation/DonationFeature'
 import MailchimpFeature from '../mailchimp/MailchimpFeature'
 import TransactionFeature from '../transaction/TransactionFeature'
 
-import MemberFeature from '@flock-eco/feature-member/src/main/react/member/MemberFeature'
+import {MemberFeature} from '@flock-eco/feature-member/src/main/react/member/MemberFeature'
 import {UserFeature} from '@flock-eco/feature-user/src/main/react/user/UserFeature'
 
 import AppSettings from './AppSettings'
@@ -17,9 +17,17 @@ import AppSpinner from './AppSpinner'
 
 import AuthorityUtil from '../utils/AuthorityUtil'
 
+import ApolloClient from 'apollo-boost'
+import {ApolloProvider} from '@apollo/react-hooks'
+
+
 import {createMuiTheme} from '@material-ui/core/styles';
 
 import purple from '@material-ui/core/colors/purple';
+
+const client = new ApolloClient({
+  uri: '/graphql',
+})
 
 class App extends React.Component {
 
@@ -64,44 +72,45 @@ class App extends React.Component {
       return (<AppSpinner/>)
 
     return (
-      <HashRouter>
-        <AppLayout theme={this.theme} title={this.state.applicationName}>
+      <ApolloProvider client={client}>
+        <HashRouter>
+          <AppLayout theme={this.theme} title={this.state.applicationName}>
 
-          <Route path='/' exact render={(props) => (
-            <Redirect to="/dashboard"/>
-          )}/>
+            <Route path='/' exact render={(props) => (
+              <Redirect to="/dashboard"/>
+            )}/>
 
-          <Route path='/dashboard' exact render={(props) => (
-            <DashboardFeature/>
-          )}/>
+            <Route path='/dashboard' exact render={(props) => (
+              <DashboardFeature/>
+            )}/>
 
-          <Route path='/members' exact render={(props) => (
-            <MemberFeature/>
-          )}/>
+            <Route path='/members' exact render={(props) => (
+              <MemberFeature/>
+            )}/>
 
-          <Route path='/donations' exact render={(props) => (
-            <DonationFeature/>
-          )}/>
+            <Route path='/donations' exact render={(props) => (
+              <DonationFeature/>
+            )}/>
 
-          <Route path='/transactions/' exact render={(props) => (
-            <TransactionFeature/>
-          )}/>
+            <Route path='/transactions/' exact render={(props) => (
+              <TransactionFeature/>
+            )}/>
 
-          <Route path='/mailchimp' exact render={(props) => (
-            <MailchimpFeature/>
-          )}/>
+            <Route path='/mailchimp' exact render={(props) => (
+              <MailchimpFeature/>
+            )}/>
 
-          <Route path='/users' exact render={(props) => (
-            <UserFeature/>
-          )}/>
+            <Route path='/users' exact render={(props) => (
+              <UserFeature/>
+            )}/>
 
-          <Route path='/settings' render={(props) => (
-            <AppSettings/>
-          )}/>
+            <Route path='/settings' render={(props) => (
+              <AppSettings/>
+            )}/>
 
-        </AppLayout>
-      </HashRouter>
-    )
+          </AppLayout>
+        </HashRouter>
+      </ApolloProvider>)
   }
 
 }

@@ -33,7 +33,7 @@ import java.util.*
 
 
 @RunWith(SpringRunner::class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -47,6 +47,9 @@ class DonateIT {
 
     @Autowired
     lateinit var memberService: MemberService
+
+    @Autowired
+    lateinit var memberRepository: MemberRepository
 
     @Autowired
     lateinit var donationRepository: DonationRepository
@@ -166,7 +169,7 @@ class DonateIT {
     @Test
     fun donationAnoniemCreditCard() {
 
-        val initCount = memberService.findAll().toList().size
+        val initCount = memberRepository.findAll().toList().size
 
         val payment = DonationsController.Payment(
                 paymentType = PaymentType.CREDIT_CARD,
@@ -186,7 +189,7 @@ class DonateIT {
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful)
 
-        val memberRes = memberService.findAll().toList()
+        val memberRes = memberRepository.findAll().toList()
         assertEquals(initCount, memberRes.size)
 
 

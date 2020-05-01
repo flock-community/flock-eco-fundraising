@@ -15,12 +15,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories
 @EntityScan
 @ComponentScan(basePackages = [
-    "community.flock.eco.fundraising.service",
+    "community.flock.eco.fundraising.services",
     "community.flock.eco.fundraising.controllers"
 ])
 @Import(UserConfiguration::class,
         MemberConfiguration::class,
         PaymentConfiguration::class,
-        MailchimpConfiguration::class,
-        GcpRuntimeconfigConfiguration::class)
+        MailchimpConfiguration::class)
 class ApplicationConfiguration

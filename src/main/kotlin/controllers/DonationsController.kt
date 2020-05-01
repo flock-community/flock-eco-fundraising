@@ -2,10 +2,11 @@ package community.flock.eco.fundraising.controllers
 
 import community.flock.eco.core.utils.toResponse
 import community.flock.eco.feature.mailchimp.model.MailchimpMemberStatus
-import community.flock.eco.feature.member.controllers.MergeMemberEvent
+import community.flock.eco.feature.member.events.MergeMemberEvent
 import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberGroup
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
+import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.feature.payment.model.PaymentBankAccount
 import community.flock.eco.feature.payment.model.PaymentFrequency
@@ -36,6 +37,7 @@ class DonationsController(
         private val buckarooService: PaymentBuckarooService,
         private val sepaService: PaymentSepaService,
         private val memberService: MemberService,
+        private val memberRepository: MemberRepository,
         private val memberGroupRepository: MemberGroupRepository,
         private val memberFieldService: MemberFieldService,
         private val paymentMandateRepository: PaymentMandateRepository,
@@ -76,7 +78,7 @@ class DonationsController(
 
     @EventListener
     fun handleMergeMemberEvent(event: MergeMemberEvent) {
-        event.mergeMembers
+        event.mergedMembers
                 .flatMap { donationRepository.findByMemberId(it.id) }
                 .map { it.copy(member = event.member) }
                 .toList()
@@ -135,7 +137,7 @@ class DonationsController(
                             MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
                     )
             ).let {
-                memberService.create(it)
+                memberRepository.save(it)
             }
         }
 
@@ -199,6 +201,7 @@ class DonationsController(
                             }
                 }
             }
+            PaymentType.CACHE -> throw error("cannot do cache donation")
         }
     }
 
@@ -213,7 +216,7 @@ class DonationsController(
         memberFieldService.init()
         val donation = Donation(
                 member = form.member
-                        ?.let { memberService.create(it) },
+                        ?.let { memberRepository.save(it) },
                 mandate = paymentMandateRepository.save(form.mandate),
                 destination = form.destination
         ).let {
@@ -230,7 +233,7 @@ class DonationsController(
                 .map { donation ->
                     donation.copy(
                             member = form.member
-                                    ?.let { memberService.update(form.member.id, it) },
+                                    ?.let { memberRepository.save(it) },
                             mandate = paymentMandateRepository.save(form.mandate),
                             destination = form.destination
                     ).let {
@@ -252,7 +255,7 @@ class DonationsController(
                 donation.member?.let { member ->
                     member
                             .copy(fields = member.fields + (TERMINATION_REASON.key to reason))
-                            .let { memberService.update(it.id, it) }
+                            .let { memberRepository.save(it) }
                 }
             }
 

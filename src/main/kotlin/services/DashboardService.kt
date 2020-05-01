@@ -34,7 +34,7 @@ class DashboardService(val entityManager: EntityManager,
     )
 
     fun newMembers(): List<Member> {
-        val sort = Sort(Sort.Direction.DESC, "id")
+        val sort = Sort.by(Sort.Direction.DESC, "id")
         val page = PageRequest.of(0, 5, sort)
         val specification = MemberSpecification(statuses = setOf(MemberStatus.NEW))
         return memberRepository.findAll(specification, page)
@@ -42,7 +42,7 @@ class DashboardService(val entityManager: EntityManager,
     }
 
     fun newDonationsOnce(): List<Donation> {
-        val sort = Sort(Sort.Direction.DESC, "id")
+        val sort = Sort.by(Sort.Direction.DESC, "id")
         val page = PageRequest.of(0, 15, sort)
         return donationRepository.findAll(page).content
                 .filter { donation -> donation.mandate.isOnce() }
@@ -51,7 +51,7 @@ class DashboardService(val entityManager: EntityManager,
     }
 
     fun newDonationsRecurring(): List<Donation> {
-        val sort = Sort(Sort.Direction.DESC, "id")
+        val sort = Sort.by(Sort.Direction.DESC, "id")
         val page = PageRequest.of(0, 15, sort)
         return donationRepository.findAll(page).content
                 .filter { donation -> donation.mandate.isRecurring() }
