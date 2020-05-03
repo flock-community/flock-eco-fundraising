@@ -1,5 +1,6 @@
 package community.flock.eco.fundraising.controllers
 
+import community.flock.eco.core.utils.toNullable
 import community.flock.eco.core.utils.toResponse
 import community.flock.eco.feature.mailchimp.model.MailchimpMemberStatus
 import community.flock.eco.feature.member.events.MergeMemberEvent
@@ -7,7 +8,6 @@ import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberGroup
 import community.flock.eco.feature.member.repositories.MemberGroupRepository
 import community.flock.eco.feature.member.repositories.MemberRepository
-import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.feature.payment.model.PaymentBankAccount
 import community.flock.eco.feature.payment.model.PaymentFrequency
 import community.flock.eco.feature.payment.model.PaymentMandate
@@ -29,30 +29,34 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URL
 import java.time.LocalDate
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/donations")
 class DonationsController(
+        private val request: HttpServletRequest,
         private val buckarooService: PaymentBuckarooService,
         private val sepaService: PaymentSepaService,
-        private val memberService: MemberService,
         private val memberRepository: MemberRepository,
         private val memberGroupRepository: MemberGroupRepository,
         private val memberFieldService: MemberFieldService,
         private val paymentMandateRepository: PaymentMandateRepository,
         private val donationRepository: DonationRepository) {
 
-    @Value("\${flock.fundraising.donations.successUrl:@null}")
-    lateinit var successUrl: String
+    @Value("\${flock.fundraising.donations.successPath}")
+    lateinit var successPath: String
 
-    @Value("\${flock.fundraising.donations.failureUrl:@null}")
-    lateinit var failureUrl: String
+    @Value("\${flock.fundraising.donations.failurePath}")
+    lateinit var failurePath: String
 
     data class Donate(
             val payment: Payment,
             val member: Member? = null,
             val newsletter: Boolean,
+            val language: String?,
             val agreedOnTerms: Boolean,
             val group: String? = null,
             val destination: String? = null
@@ -114,30 +118,40 @@ class DonationsController(
     @PostMapping("/donate")
     fun donate(@RequestBody donate: Donate): ResponseEntity<String> {
 
-        val groupDonation = donate.group?.let {
-            memberGroupRepository
-                    .findByCode(it.toUpperCase())
-                    .orElseGet {
-                        MemberGroup(
-                                name = it,
-                                code = it.toUpperCase()
-                        ).let {
-                            memberGroupRepository.save(it)
-                        }
-                    }
-        }
+        val groupDonation = donate.group
+                ?.let {
+                    memberGroupRepository
+                            .findByCode(it.toUpperCase())
+                            .toNullable()
+                            ?: MemberGroup(
+                                    name = it,
+                                    code = it.toUpperCase())
+                                    .run { memberGroupRepository.save(this) } }
 
-        val member = donate.member?.let {
-            it.copy(
-                    groups = groupDonation?.let { setOf(it) } ?: setOf(),
-                    fields = mapOf(
-                            NEWSLETTER.key to donate.newsletter.toString().toLowerCase(),
-                            AGREED_ON_TERMS.key to donate.agreedOnTerms.toString().toLowerCase(),
-                            TRANSACTIONAL_MAIL.key to "true",
-                            MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
-                    )
+        val member = donate.member
+                ?.copy(
+                        groups = groupDonation?.run { setOf(this) } ?: setOf(),
+                        fields = mapOf(
+                                NEWSLETTER.key to donate.newsletter.toString().toLowerCase(),
+                                AGREED_ON_TERMS.key to donate.agreedOnTerms.toString().toLowerCase(),
+                                TRANSACTIONAL_MAIL.key to "true",
+                                MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
+                        ),
+                        language = donate.language?.toLowerCase()
+                )
+                ?.run { memberRepository.save(this) }
+
+
+        val successUrl = request.extractRequestor() + successPath
+        val failureUrl = request.extractRequestor() + failurePath
+
+        fun PaymentMandate.createDonation() {
+            Donation(
+                    member = member,
+                    mandate = this,
+                    destination = donate.destination
             ).let {
-                memberRepository.save(it)
+                donationRepository.save(it)
             }
         }
 
@@ -147,61 +161,37 @@ class DonationsController(
                 PaymentBuckarooService.PaymentMethod.Ideal(
                         amount = donate.payment.amount,
                         description = "Donation",
-                        issuer = donate.payment.issuer!!
-                ).let {
-                    buckarooService.create(it)
-                            .let {
-                                Donation(
-                                        member = member,
-                                        mandate = it.mandate,
-                                        destination = donate.destination
-                                ).let {
-                                    donationRepository.save(it)
-                                }
-                                ResponseEntity.ok(it.redirectUrl)
-                            }
-                }
+                        issuer = donate.payment.issuer!!,
+                        successUrl = successUrl,
+                        failureUrl = failureUrl)
+                        .let { buckarooService.create(it) }
+                        .apply { mandate.createDonation() }
+                        .run { ResponseEntity.ok(redirectUrl) }
             }
+
             PaymentType.CREDIT_CARD -> {
                 PaymentBuckarooService.PaymentMethod.CreditCard(
                         amount = donate.payment.amount,
                         description = "Donation",
-                        issuer = donate.payment.issuer!!
-                ).let {
-                    buckarooService.create(it)
-                            .let {
-                                Donation(
-                                        member = member,
-                                        mandate = it.mandate,
-                                        destination = donate.destination
-                                ).let {
-                                    donationRepository.save(it)
-                                }
-                                ResponseEntity.ok(it.redirectUrl)
-                            }
-                }
+                        issuer = donate.payment.issuer!!,
+                        successUrl = successUrl,
+                        failureUrl = failureUrl)
+                        .let { buckarooService.create(it) }
+                        .apply { mandate.createDonation() }
+                        .run { ResponseEntity.ok(redirectUrl) }
+
             }
             PaymentType.SEPA -> {
                 PaymentSepaService.PaymentSepa(
                         amount = donate.payment.amount,
                         bankAccount = donate.payment.bankAccount!!,
-                        frequency = donate.payment.frequency!!
-                ).let {
-                    sepaService.create(it)
-                            .let {
-                                Donation(
-                                        member = member,
-                                        mandate = it.mandate,
-                                        destination = donate.destination
-                                ).let {
-                                    donationRepository.save(it)
-                                }
-
-                                ResponseEntity.ok(successUrl)
-                            }
-                }
+                        frequency = donate.payment.frequency!!)
+                        .let { sepaService.create(it) }
+                        .run { ResponseEntity.ok(successUrl) }
             }
-            PaymentType.CACHE -> throw error("cannot do cache donation")
+
+            PaymentType.CACHE -> throw error("cannot jet do cache donations")
+
         }
     }
 
@@ -262,6 +252,30 @@ class DonationsController(
             donation.mandate
                     .copy(endDate = LocalDate.now())
                     .let { paymentMandateRepository.save(it) }
+        }
+    }
+
+    private fun HttpServletRequest.extractRequestor(): String = when {
+        (this.getHeader("origin") != null) -> this.getHeader("origin")
+        (this.getHeader("x-forwarded-host") != null) -> {
+            val proto = this.getHeader("x-forwarded-proto") ?: "https"
+            val host = this.getHeader("x-forwarded-host")
+            val port = this.getHeader("x-forwarded-port").toInt()
+            UriComponentsBuilder.newInstance()
+                    .scheme(proto)
+                    .host(host)
+                    .port(port)
+                    .build()
+                    .toUriString()
+        }
+        else -> {
+            val url = URL(this.requestURL.toString())
+            UriComponentsBuilder.newInstance()
+                    .scheme(url.protocol)
+                    .host(url.host)
+                    .port(url.port)
+                    .build()
+                    .toUriString()
         }
     }
 
