@@ -81,7 +81,8 @@ class DonateIT {
                 member = member,
                 payment = payment,
                 agreedOnTerms = true,
-                newsletter = true
+                newsletter = true,
+                language = "nl"
         )
 
         mockMvc.perform(post("/api/donations/donate")
@@ -144,7 +145,8 @@ class DonateIT {
                 member = member,
                 payment = payment,
                 agreedOnTerms = true,
-                newsletter = true
+                newsletter = true,
+                language = "nl"
         )
 
         mockMvc.perform(post("/api/donations/donate")
@@ -180,7 +182,8 @@ class DonateIT {
         val donate = DonationsController.Donate(
                 payment = payment,
                 agreedOnTerms = true,
-                newsletter = true
+                newsletter = true,
+                language = "nl"
         )
 
         mockMvc.perform(post("/api/donations/donate")
