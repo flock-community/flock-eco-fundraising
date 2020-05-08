@@ -19,7 +19,10 @@ handlers:
   - url: /configuration
     script: auto
     secure: always
-  - url: /(_ah|login|logout|oauth2|api|graphql).*
+  - url: /(graphql|graphiql|vendor).*
+    script: auto
+    secure: always
+  - url: /(_ah|login|logout|oauth2|api).*
     script: auto
     secure: always
   - url: /tasks/.*

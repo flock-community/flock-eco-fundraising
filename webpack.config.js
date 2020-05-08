@@ -51,6 +51,7 @@ module.exports = {
       '/login/**': 'http://localhost:8080',
       '/tasks/**': 'http://localhost:8080',
       '/login**': 'http://localhost:8080',
+      '/graphql**': 'http://localhost:8080',
       '/configuration': 'http://localhost:8080',
       '/_ah/**': 'http://localhost:8080',
     }

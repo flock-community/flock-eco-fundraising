@@ -172,15 +172,17 @@ class MailchimpService(
                 ?.let { MailchimpMemberStatus.valueOf(it) }
                 ?: MailchimpMemberStatus.SUBSCRIBED
         return MailchimpMember(
-                firstName = member.infix
-                        ?.let { member.firstName + " " + it }
-                        ?: member.firstName,
-                lastName = member.surName,
                 email = member.email ?: "",
                 status = status,
                 tags = member.groups
                         .map { it.code }
                         .toSet(),
+                fields = mapOf(
+                        "FNAME" to (member.infix?.let { member.firstName + " " + it }?: member.firstName),
+                        "LNAME" to member.surName,
+                        "LANGUAGE" to member.language?.toUpperCase()
+                ),
+                language = member.language,
                 interests = mapOf(
                         interests.getValue(Interest.TRANSACTIONAL).id to transactional,
                         interests.getValue(Interest.NEWSLETTER).id to newsletter)
