@@ -187,10 +187,11 @@ class DonationsController(
                         bankAccount = donate.payment.bankAccount!!,
                         frequency = donate.payment.frequency!!)
                         .let { sepaService.create(it) }
+                        .apply { mandate.createDonation() }
                         .run { ResponseEntity.ok(successUrl) }
             }
 
-            PaymentType.CACHE -> throw error("cannot jet do cache donations")
+            PaymentType.CACHE -> throw error("cannot make cache donations")
 
         }
     }
