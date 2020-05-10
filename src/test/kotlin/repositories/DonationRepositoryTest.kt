@@ -28,7 +28,7 @@ import java.util.*
 @AutoConfigureTestDatabase
 @ActiveProfiles(profiles = ["local"])
 @Import(ApplicationConfiguration::class)
-class DonationRepositoryTest {
+internal class DonationRepositoryTest {
 
     @Autowired
     lateinit var donationRepository: DonationRepository

@@ -30,6 +30,10 @@ class MailchimpService(
         private val mailchimpClient: MailchimpClient
 ) {
 
+    init {
+        System.out.println("------------123----------")
+    }
+
     private val interestCategory: String = "Doneasy"
 
     enum class Interest {
@@ -90,8 +94,9 @@ class MailchimpService(
                         .map {
                             if (activeList.size == 1) {
                                 it.copy(
-                                        firstName = event.firstName,
-                                        surName = event.lastName
+                                        firstName = event.fields["FNAME"] ?: "<empty>",
+                                        surName = event.fields["LNAME"] ?: "<empty>",
+                                        language =  event.fields["LANGUAGE"]?.toLowerCase()
                                 )
                             } else {
                                 it
@@ -102,15 +107,16 @@ class MailchimpService(
                         }
             } else {
                 Member(
-                        firstName = event.firstName,
-                        surName = event.lastName,
+                        firstName = event.fields["FNAME"] ?: "<empty>",
+                        surName = event.fields["LNAME"] ?: "<empty>",
                         email = event.email,
                         status = MemberStatus.NEW,
                         fields = mapOf(
                                 NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests),
                                 TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests),
                                 MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
-                        )
+                        ),
+                        language =  event.fields["LANGUAGE"]?.toLowerCase()
                 ).run { memberRepository.save(this) }
             }
         }
@@ -178,7 +184,7 @@ class MailchimpService(
                         .map { it.code }
                         .toSet(),
                 fields = mapOf(
-                        "FNAME" to (member.infix?.let { member.firstName + " " + it }?: member.firstName),
+                        "FNAME" to (member.infix?.let { member.firstName + " " + it } ?: member.firstName),
                         "LNAME" to member.surName,
                         "LANGUAGE" to member.language?.toUpperCase()
                 ),

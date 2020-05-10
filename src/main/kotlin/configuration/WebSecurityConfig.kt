@@ -24,7 +24,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     @Autowired
     lateinit var userAuthorityService: UserAuthorityService
 
-
     @Autowired
     lateinit var userSecurityService: UserSecurityService
 
@@ -60,10 +59,11 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http
                 .cors()
 
-        if (environment.activeProfiles.contains("local"))
-            userSecurityService.testLogin(http)
-        else
-            userSecurityService.googleLogin(http)
+        when {
+            environment.activeProfiles.isEmpty() -> userSecurityService.testLogin(http)
+            "local" in environment.activeProfiles -> userSecurityService.testLogin(http)
+            else -> userSecurityService.googleLogin(http)
+        }
     }
 
 

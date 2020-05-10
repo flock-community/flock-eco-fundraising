@@ -46,10 +46,10 @@ class DonationsController(
         private val paymentMandateRepository: PaymentMandateRepository,
         private val donationRepository: DonationRepository) {
 
-    @Value("\${flock.fundraising.donations.successPath}")
+    @Value("\${flock.fundraising.donations.successPath:}")
     lateinit var successPath: String
 
-    @Value("\${flock.fundraising.donations.failurePath}")
+    @Value("\${flock.fundraising.donations.failurePath:}")
     lateinit var failurePath: String
 
     data class Donate(

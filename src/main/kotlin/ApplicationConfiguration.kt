@@ -1,6 +1,5 @@
 package community.flock.eco.fundraising
 
-import community.flock.eco.feature.gcp.runtimeconfig.GcpRuntimeconfigConfiguration
 import community.flock.eco.feature.mailchimp.MailchimpConfiguration
 import community.flock.eco.feature.member.MemberConfiguration
 import community.flock.eco.feature.payment.PaymentConfiguration
