@@ -8,9 +8,9 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 
-import MailchimpCampaignTable from '@flock-eco/feature-mailchimp/src/main/react/campaign/MailchimpCampaignTable'
-import MailchimpTemplateTable from '@flock-eco/feature-mailchimp/src/main/react/template/MailchimpTemplateTable'
-import MailchimpMemberTable from '@flock-eco/feature-mailchimp/src/main/react/member/MailchimpMemberTable'
+import MailchimpCampaignTable from '@flock-community/flock-eco-feature-mailchimp/src/main/react/campaign/MailchimpCampaignTable'
+import MailchimpTemplateTable from '@flock-community/flock-eco-feature-mailchimp/src/main/react/template/MailchimpTemplateTable'
+import MailchimpMemberTable from '@flock-community/flock-eco-feature-mailchimp/src/main/react/member/MailchimpMemberTable'
 
 import AuthorityUtil from '../utils/AuthorityUtil'
 

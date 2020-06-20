@@ -30,10 +30,6 @@ class MailchimpService(
         private val mailchimpClient: MailchimpClient
 ) {
 
-    init {
-        System.out.println("------------123----------")
-    }
-
     private val interestCategory: String = "Doneasy"
 
     enum class Interest {

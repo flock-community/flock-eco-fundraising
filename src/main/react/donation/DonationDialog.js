@@ -21,7 +21,7 @@ import StopDialog from "./StopDialog";
 import Chip from '@material-ui/core/Chip';
 
 import PaymentMandateForm from './PaymentMandateForm';
-import {MemberForm} from '@flock-eco/feature-member/src/main/react/member/MemberForm'
+import {MemberForm} from '@flock-community/flock-eco-feature-member/src/main/react/member/MemberForm'
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 

@@ -1,17 +1,19 @@
 package community.flock.eco.fundraising.services
 
+import com.nhaarman.mockitokotlin2.anyOrNull
 import community.flock.eco.feature.mailchimp.clients.MailchimpClient
 import community.flock.eco.feature.mailchimp.events.MailchimpWebhookEvent
 import community.flock.eco.feature.mailchimp.events.MailchimpWebhookEventType
+import community.flock.eco.feature.mailchimp.model.MailchimpInterest
 import community.flock.eco.feature.mailchimp.model.MailchimpInterestCategory
 import community.flock.eco.feature.mailchimp.model.MailchimpInterestCategoryType
+import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.services.MemberService
 import community.flock.eco.fundraising.Application
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,25 +28,40 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 
-
 @RunWith(SpringRunner::class)
 @SpringBootTest(
         classes = [Application::class],
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
 @TestPropertySource(properties = ["flock.fundraising.mailchimp.enabled=true"])
-internal class MailchimpServiceTest {
+internal class MailchimpServiceTest() {
+
+    companion object {
+        private val mock = mock(MailchimpClient::class.java)
+    }
 
     @TestConfiguration
     class TestConfig {
+
         @Bean
         @Primary
         fun mailchimpClient(): MailchimpClient {
-            val mock = mock(MailchimpClient::class.java)
+
             `when`(mock.getInterestsCategories(anyString())).thenReturn(listOf(MailchimpInterestCategory(
                     title = "Doneasy",
                     type = MailchimpInterestCategoryType.CHECKBOXES
             )))
+            `when`(mock.getInterests(anyString(), anyString())).thenReturn(listOf(
+                    MailchimpInterest(
+                            id = "1",
+                            name = "TRANSACTIONAL"
+                    ),
+                    MailchimpInterest(
+                            id = "2",
+                            name = "NEWSLETTER"
+                    )
+            ))
+
             return mock
         }
     }
@@ -98,6 +115,25 @@ internal class MailchimpServiceTest {
         assertEquals("LastName", list.first().surName)
         assertEquals("nl", list.first().language)
         assertEquals("new@email.nl", list.first().email)
+
+    }
+
+    @Test
+    fun `should sync member with mailchimp when member create`() {
+
+//        val putMemberSpy = spy(mock.putMember(anyString(), anyOrNull()))
+//
+//        val member = memberService.create(Member(
+//                firstName = "firstName",
+//                surName = "surName",
+//                email = "new@member.nl",
+//                language = "nl"
+//        ))
+
+//        assertEquals("FirstName", list.first().firstName)
+//        assertEquals("LastName", list.first().surName)
+//        assertEquals("nl", list.first().language)
+//        assertEquals("new@email.nl", list.first().email)
 
     }
 }
