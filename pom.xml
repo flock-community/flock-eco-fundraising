@@ -291,7 +291,7 @@
                         <image>gcr.io/flock-eco/flock-eco-fundraising</image>
                     </to>
                     <container>
-                        <mainClass>community.flock.eco.workday.ApplicationKt</mainClass>
+                        <mainClass>community.flock.eco.fundraising.ApplicationKt</mainClass>
                     </container>
                 </configuration>
             </plugin>
