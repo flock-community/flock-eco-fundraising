@@ -34,6 +34,8 @@ import java.net.URL
 import java.time.LocalDate
 import javax.servlet.http.HttpServletRequest
 
+private val ibanRegex ="^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}\$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?\$".toRegex()
+
 @RestController
 @RequestMapping("/api/donations")
 class DonationsController(
@@ -117,6 +119,21 @@ class DonationsController(
 
     @PostMapping("/donate")
     fun donate(@RequestBody donate: Donate): ResponseEntity<String> {
+
+        if(donate.member != null && donate.member.firstName.isEmpty()){
+            throw error("First name required")
+        }
+        if(donate.member != null && donate.member.surName.isEmpty()){
+            throw error("Sur name required")
+        }
+        if(donate.newsletter && donate.member?.email.isNullOrEmpty()){
+            throw error("Email required when subscribe for newsletter")
+        }
+        if(donate.payment.paymentType == PaymentType.SEPA){
+            if(donate.payment.bankAccount?.iban?.matches(ibanRegex) == false){
+                throw error("Not a valid IBAN number")
+            }
+        }
 
         val groupDonation = donate.group
                 ?.let {
