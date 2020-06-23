@@ -92,6 +92,14 @@ class DonationDialog extends React.Component {
     this.props.onComplete()
   }
 
+  handleDelete = () => {
+    const opts = {
+      method:"DELETE"
+    }
+    fetch(`/api/donations/${this.props.id}`, opts)
+      .then(() => this.props.onComplete())
+  }
+
   handleStop = () => {
     this.setState({stop: true})
   }
@@ -172,6 +180,10 @@ class DonationDialog extends React.Component {
 
           <DialogActions>
 
+            {/*<Button onClick={this.handleDelete}>*/}
+            {/*  Delete*/}
+            {/*</Button>*/}
+
             {!this.mandateEnded() && <Button onClick={this.handleStop} color="secondary">
               Stop
             </Button>}
@@ -201,7 +213,7 @@ class DonationDialog extends React.Component {
   noContent() {
     return (<DialogContent>
       <p>Mandate ended at: {this.state.mandate.endDate}</p>
-      <p>With Reason: {this.state.member.fields['termination_reason']}</p>
+      <p>With Reason: {this.state.member && this.state.member.fields['termination_reason']}</p>
     </DialogContent>)
   }
 

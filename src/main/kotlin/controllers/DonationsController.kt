@@ -13,6 +13,7 @@ import community.flock.eco.feature.payment.model.PaymentFrequency
 import community.flock.eco.feature.payment.model.PaymentMandate
 import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.feature.payment.repositories.PaymentMandateRepository
+import community.flock.eco.feature.payment.repositories.PaymentTransactionRepository
 import community.flock.eco.feature.payment.services.PaymentBuckarooService
 import community.flock.eco.feature.payment.services.PaymentSepaService
 import community.flock.eco.fundraising.model.Donation
@@ -33,8 +34,9 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.net.URL
 import java.time.LocalDate
 import javax.servlet.http.HttpServletRequest
+import javax.transaction.Transactional
 
-private val ibanRegex ="^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}\$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?\$".toRegex()
+private val ibanRegex = "^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}\$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?\$".toRegex()
 
 @RestController
 @RequestMapping("/api/donations")
@@ -46,6 +48,7 @@ class DonationsController(
         private val memberGroupRepository: MemberGroupRepository,
         private val memberFieldService: MemberFieldService,
         private val paymentMandateRepository: PaymentMandateRepository,
+        private val paymentTransactionRepository: PaymentTransactionRepository,
         private val donationRepository: DonationRepository) {
 
     @Value("\${flock.fundraising.donations.successPath:}")
@@ -92,7 +95,7 @@ class DonationsController(
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('MemberAuthority.READ')")
+    @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
     fun findAll(
             @RequestParam("s") search: String = "",
             page: Pageable): ResponseEntity<List<Donation>> {
@@ -120,17 +123,17 @@ class DonationsController(
     @PostMapping("/donate")
     fun donate(@RequestBody donate: Donate): ResponseEntity<String> {
 
-        if(donate.member != null && donate.member.firstName.isEmpty()){
+        if (donate.member != null && donate.member.firstName.isEmpty()) {
             throw error("First name required")
         }
-        if(donate.member != null && donate.member.surName.isEmpty()){
+        if (donate.member != null && donate.member.surName.isEmpty()) {
             throw error("Sur name required")
         }
-        if(donate.newsletter && donate.member?.email.isNullOrEmpty()){
+        if (donate.newsletter && donate.member?.email.isNullOrEmpty()) {
             throw error("Email required when subscribe for newsletter")
         }
-        if(donate.payment.paymentType == PaymentType.SEPA){
-            if(donate.payment.bankAccount?.iban?.matches(ibanRegex) == false){
+        if (donate.payment.paymentType == PaymentType.SEPA) {
+            if (donate.payment.bankAccount?.iban?.matches(ibanRegex) == false) {
                 throw error("Not a valid IBAN number")
             }
         }
@@ -143,7 +146,8 @@ class DonationsController(
                             ?: MemberGroup(
                                     name = it,
                                     code = it.toUpperCase())
-                                    .run { memberGroupRepository.save(this) } }
+                                    .run { memberGroupRepository.save(this) }
+                }
 
         val member = donate.member
                 ?.copy(
@@ -214,12 +218,14 @@ class DonationsController(
     }
 
     @GetMapping("/donate")
+    @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
     fun get(): ResponseEntity<Unit> {
         memberFieldService.init()
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping()
+    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
     fun create(@RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         val donation = Donation(
@@ -235,6 +241,7 @@ class DonationsController(
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
     fun update(@PathVariable id: Long, @RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         return donationRepository.findById(id)
@@ -255,6 +262,7 @@ class DonationsController(
 
 
     @PostMapping("/{id}/stop")
+    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
     fun stop(@PathVariable id: Long, @RequestBody form: DonationStopForm) {
 
         donationRepository.findById(id).ifPresent { donation ->
@@ -271,6 +279,23 @@ class DonationsController(
                     .copy(endDate = LocalDate.now())
                     .let { paymentMandateRepository.save(it) }
         }
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
+    @Transactional
+    fun delete(@PathVariable id: Long) {
+        donationRepository.findById(id)
+                .toNullable()
+                ?.let {
+                    val mandateId = it.mandate.id
+                    val transactionIds = it.mandate.transactions.map { it.id }
+                    donationRepository.deleteById(it.id)
+                    transactionIds.forEach{
+                        paymentTransactionRepository.deleteById(it)
+                    }
+                    paymentMandateRepository.deleteById(mandateId)
+                }
     }
 
     private fun HttpServletRequest.extractRequestor(): String = when {
