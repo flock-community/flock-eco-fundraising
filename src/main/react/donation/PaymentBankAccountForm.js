@@ -74,6 +74,7 @@ class PaymentBankAccountForm extends React.Component {
           >
             <MenuItem value="NL">NL</MenuItem>
             <MenuItem value="BE">BE</MenuItem>
+            <MenuItem value="FR">FR</MenuItem>
           </SelectValidator>
         </Grid>
       </Grid>
