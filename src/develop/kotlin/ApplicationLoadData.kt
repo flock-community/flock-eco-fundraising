@@ -20,7 +20,7 @@ class ApplicationLoadData : CommandLineRunner {
     @Autowired
     lateinit var excelLoadData: ExcelLoadData
 
-    //access command line arguments
+    // access command line arguments
     @Throws(Exception::class)
     override fun run(vararg args: String) {
         if (userRepository.count() == 0L) {
@@ -35,12 +35,9 @@ class ApplicationLoadData : CommandLineRunner {
         fun main(args: Array<String>) {
 
             SpringApplicationBuilder(ApplicationLoadData::class.java)
-                    .web(WebApplicationType.NONE)
-                    .build()
-                    .run(*args)
-
+                .web(WebApplicationType.NONE)
+                .build()
+                .run(*args)
         }
     }
 }
-
-

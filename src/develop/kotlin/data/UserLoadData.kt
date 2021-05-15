@@ -11,12 +11,13 @@ import javax.annotation.PostConstruct
 
 @Component
 @ConditionalOnProperty(
-        "flock.fundraising.load-data.enabled",
-        "flock.fundraising.load-data.stub")
+    "flock.fundraising.load-data.enabled",
+    "flock.fundraising.load-data.stub"
+)
 class UserLoadData(
-        private val userService: UserService,
-        private val userAccountService: UserAccountService,
-        private val userAuthorityService: UserAuthorityService
+    private val userService: UserService,
+    private val userAccountService: UserAccountService,
+    private val userAuthorityService: UserAuthorityService
 ) {
 
     val data: MutableMap<String, User> = mutableMapOf()
@@ -25,14 +26,14 @@ class UserLoadData(
     fun init() {
 
         data["test"] = userService.findByEmail("test") ?: userAccountService
-                .createUserAccountPassword(UserAccountPasswordForm(
-                        email = "test",
-                        password = "test",
-                        authorities = userAuthorityService.allAuthorities()
-                                .map { it.toName() }
-                                .toSet()
-                )).user
-
+            .createUserAccountPassword(
+                UserAccountPasswordForm(
+                    email = "test",
+                    password = "test",
+                    authorities = userAuthorityService.allAuthorities()
+                        .map { it.toName() }
+                        .toSet()
+                )
+            ).user
     }
-
 }

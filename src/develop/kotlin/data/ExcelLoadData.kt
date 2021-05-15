@@ -41,15 +41,17 @@ import java.time.format.DateTimeFormatter
 
 @Component
 @ConditionalOnProperty(
-        "flock.fundraising.load-data.enabled",
-        "flock.fundraising.load-data.excel")
+    "flock.fundraising.load-data.enabled",
+    "flock.fundraising.load-data.excel"
+)
 class ExcelLoadData(
-        private val userRepository: UserRepository,
-        private val donationRepository: DonationRepository,
-        private val memberRepository: MemberRepository,
-        private val memberFieldRepository: MemberFieldRepository,
-        private val memberGroupRepository: MemberGroupRepository,
-        private val paymentMandateRepository: PaymentMandateRepository) : LoadData<Member> {
+    private val userRepository: UserRepository,
+    private val donationRepository: DonationRepository,
+    private val memberRepository: MemberRepository,
+    private val memberFieldRepository: MemberFieldRepository,
+    private val memberGroupRepository: MemberGroupRepository,
+    private val paymentMandateRepository: PaymentMandateRepository
+) : LoadData<Member> {
 
     @Value("\${flock.fundraising.load-data.excel:@null}")
     lateinit var file: String
@@ -61,122 +63,120 @@ class ExcelLoadData(
         if (file == null) return listOf()
 
         MemberField(
-                name = "newsletter",
-                label = "Subscribed for newsletter",
-                type = MemberFieldType.CHECKBOX
+            name = "newsletter",
+            label = "Subscribed for newsletter",
+            type = MemberFieldType.CHECKBOX
         ).let {
             memberFieldRepository.save(it)
         }
 
         createUser(
-                name = "Willem Veelenturf",
-                email = "willem.veelenturf@gmail.com",
-                authorities = setOf(
-                        UserAuthority.READ,
-                        UserAuthority.WRITE,
-                        MemberAuthority.READ,
-                        MemberAuthority.WRITE,
-                        DonationsAuthority.READ,
-                        DonationsAuthority.WRITE,
-                        PaymentTransactionAuthority.READ,
-                        MemberGroupAuthority.READ,
-                        MemberFieldAuthority.READ,
-                        PaymentMandateAuthority.READ,
-                        MailchimpCampaignAuthority.READ,
-                        MailchimpTemplateAuthority.READ,
-                        MailchimpMemberAuthority.READ
-                )
+            name = "Willem Veelenturf",
+            email = "willem.veelenturf@gmail.com",
+            authorities = setOf(
+                UserAuthority.READ,
+                UserAuthority.WRITE,
+                MemberAuthority.READ,
+                MemberAuthority.WRITE,
+                DonationsAuthority.READ,
+                DonationsAuthority.WRITE,
+                PaymentTransactionAuthority.READ,
+                MemberGroupAuthority.READ,
+                MemberFieldAuthority.READ,
+                PaymentMandateAuthority.READ,
+                MailchimpCampaignAuthority.READ,
+                MailchimpTemplateAuthority.READ,
+                MailchimpMemberAuthority.READ
+            )
         )
 
         val file = File(javaClass.classLoader.getResource(file).file)
 
         return readXlsx(file)
-                .asSequence()
-                .filterIndexed { index, row -> index > 0 }
-                .map {
-                    val member = Member(
-                            firstName = it.getCell(1).stringCellValue,
-                            infix = it.getCell(2)?.let {
-                                it.stringCellValue
-                            },
-                            surName = it.getCell(3).stringCellValue,
-                            gender = MemberGender.valueOf(it.getCell(0).stringCellValue),
+            .asSequence()
+            .filterIndexed { index, row -> index > 0 }
+            .map {
+                val member = Member(
+                    firstName = it.getCell(1).stringCellValue,
+                    infix = it.getCell(2)?.let {
+                        it.stringCellValue
+                    },
+                    surName = it.getCell(3).stringCellValue,
+                    gender = MemberGender.valueOf(it.getCell(0).stringCellValue),
 
-                            street = it.getCell(6)?.let {
-                                when (it.cellTypeEnum) {
-                                    CellType.STRING -> it.stringCellValue
-                                    else -> null
-                                }
-                            },
-                            houseNumber = it.getCell(7)?.let {
-                                it.numericCellValue
-                                        .toInt()
-                                        .toString()
-                            },
-                            houseNumberExtension = it.getCell(8)?.let {
+                    street = it.getCell(6)?.let {
+                        when (it.cellTypeEnum) {
+                            CellType.STRING -> it.stringCellValue
+                            else -> null
+                        }
+                    },
+                    houseNumber = it.getCell(7)?.let {
+                        it.numericCellValue
+                            .toInt()
+                            .toString()
+                    },
+                    houseNumberExtension = it.getCell(8)?.let {
+                        it.toString()
+                    },
+                    postalCode = it.getCell(9)?.let {
+                        when (it.cellTypeEnum) {
+                            CellType.STRING -> it.stringCellValue
+                            else -> null
+                        }
+                    },
+                    city = it.getCell(10)?.let {
+                        it.stringCellValue
+                    },
+                    country = it.getCell(11)?.let {
+                        it.stringCellValue
+                    },
+                    phoneNumber = it.getCell(12)
+                        ?.let {
+                            it.toString()
+                        }
+                        ?: it.getCell(13)
+                            ?.let {
                                 it.toString()
                             },
-                            postalCode = it.getCell(9)?.let {
-                                when (it.cellTypeEnum) {
-                                    CellType.STRING -> it.stringCellValue
-                                    else -> null
-                                }
-                            },
-                            city = it.getCell(10)?.let {
-                                it.stringCellValue
-                            },
-                            country = it.getCell(11)?.let {
-                                it.stringCellValue
-                            },
-                            phoneNumber = it.getCell(12)
-                                    ?.let {
-                                        it.toString()
-                                    }
-                                    ?: it.getCell(13)
-                                            ?.let {
-                                                it.toString()
-                                            },
-                            email = it.getCell(14)?.let {
-                                it.stringCellValue
-                            },
-                            groups = it.getCell(15)
-                                    .let {
-                                        this.findMemberGroups(it.stringCellValue)
-                                    }
-                                    .toSet(),
-                            created = it.getCell(5).toLocalDate() ?: LocalDate.now(),
-                            status = MemberStatus.ACTIVE
-                    ).let {
-                        memberRepository.save(it)
-                    }
-
-
-                    if (it.getCell(16) != null && it.getCell(16).cellTypeEnum == CellType.NUMERIC) {
-                        createDonation(
-                                member = member,
-                                paymentBankAccount = PaymentBankAccount(
-                                        name = it.getCell(21).stringCellValue,
-                                        country = it.getCell(22).stringCellValue,
-                                        iban = it.getCell(23).stringCellValue,
-                                        bic = it.getCell(24).stringCellValue
-                                ),
-                                code = it.getCell(16).numericCellValue
-                                        .toInt()
-                                        .toString(),
-                                startDate = it.getCell(17).toLocalDate() ?: LocalDate.now(),
-                                endDate = it.getCell(18).toLocalDate(),
-                                collectionMonth = it.getCell(28).stringCellValue
-                                        .let {
-                                            Month.valueOf(it)
-                                        },
-                                amount = it.getCell(25).numericCellValue,
-                                frequency = it.getCell(26).toPaymentFrequency()!!
-                        )
-                    }
-                    member
-
+                    email = it.getCell(14)?.let {
+                        it.stringCellValue
+                    },
+                    groups = it.getCell(15)
+                        .let {
+                            this.findMemberGroups(it.stringCellValue)
+                        }
+                        .toMutableSet(),
+                    created = it.getCell(5).toLocalDate() ?: LocalDate.now(),
+                    status = MemberStatus.ACTIVE
+                ).let {
+                    memberRepository.save(it)
                 }
-                .toList()
+
+                if (it.getCell(16) != null && it.getCell(16).cellTypeEnum == CellType.NUMERIC) {
+                    createDonation(
+                        member = member,
+                        paymentBankAccount = PaymentBankAccount(
+                            name = it.getCell(21).stringCellValue,
+                            country = it.getCell(22).stringCellValue,
+                            iban = it.getCell(23).stringCellValue,
+                            bic = it.getCell(24).stringCellValue
+                        ),
+                        code = it.getCell(16).numericCellValue
+                            .toInt()
+                            .toString(),
+                        startDate = it.getCell(17).toLocalDate() ?: LocalDate.now(),
+                        endDate = it.getCell(18).toLocalDate(),
+                        collectionMonth = it.getCell(28).stringCellValue
+                            .let {
+                                Month.valueOf(it)
+                            },
+                        amount = it.getCell(25).numericCellValue,
+                        frequency = it.getCell(26).toPaymentFrequency()!!
+                    )
+                }
+                member
+            }
+            .toList()
     }
 
     private fun readXlsx(file: File): MutableIterator<Row> {
@@ -188,86 +188,87 @@ class ExcelLoadData(
 
     private fun createUser(name: String, email: String, authorities: Set<Authority>) {
         User(
-                name = name,
-                email = email,
-                authorities = authorities
-                        .map { it.toName() }
-                        .toSet()
+            name = name,
+            email = email,
+            authorities = authorities
+                .map { it.toName() }
+                .toSet()
         ).let {
             userRepository.save(it)
         }
     }
 
     fun createDonation(
-            member: Member,
-            code: String,
-            amount: Double,
-            frequency: PaymentFrequency,
-            startDate: LocalDate,
-            endDate: LocalDate?,
-            collectionMonth: Month,
-            paymentBankAccount: PaymentBankAccount
+        member: Member,
+        code: String,
+        amount: Double,
+        frequency: PaymentFrequency,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+        collectionMonth: Month,
+        paymentBankAccount: PaymentBankAccount
     ) {
 
         donationRepository.findByCode(code)
-                .map {
-                    it.copy(
-                            member = member,
-                            mandate = PaymentMandate(
-                                    amount = amount,
-                                    frequency = frequency,
-                                    startDate = startDate,
-                                    endDate = endDate,
-                                    type = PaymentType.SEPA,
-                                    bankAccount = paymentBankAccount
-                            ).let {
-                                paymentMandateRepository.save(it)
-                            }
+            .map {
+                it.copy(
+                    member = member,
+                    mandate = PaymentMandate(
+                        amount = amount,
+                        frequency = frequency,
+                        startDate = startDate,
+                        endDate = endDate,
+                        type = PaymentType.SEPA,
+                        bankAccount = paymentBankAccount
+                    ).let {
+                        paymentMandateRepository.save(it)
+                    }
 
-                    )
-                }
-                .orElseGet {
-                    Donation(
-                            member = member,
-                            mandate = PaymentMandate(
-                                    code = code,
-                                    amount = amount,
-                                    frequency = frequency,
-                                    collectionMonth = collectionMonth,
-                                    startDate = startDate,
-                                    endDate = endDate,
-                                    type = PaymentType.SEPA,
-                                    bankAccount = paymentBankAccount
-                            ).let {
-                                paymentMandateRepository.save(it)
-                            }
+                )
+            }
+            .orElseGet {
+                Donation(
+                    member = member,
+                    mandate = PaymentMandate(
+                        code = code,
+                        amount = amount,
+                        frequency = frequency,
+                        collectionMonth = collectionMonth,
+                        startDate = startDate,
+                        endDate = endDate,
+                        type = PaymentType.SEPA,
+                        bankAccount = paymentBankAccount
+                    ).let {
+                        paymentMandateRepository.save(it)
+                    }
 
-                    )
-                }
-                .let {
-                    donationRepository.save(it)
-                }
+                )
+            }
+            .let {
+                donationRepository.save(it)
+            }
     }
 
     fun findMemberGroups(groupString: String): Set<MemberGroup> {
         return groupString
-                .split(",")
-                .map {
-                    groups.getOrPut(it, {
+            .split(",")
+            .map {
+                groups.getOrPut(
+                    it,
+                    {
                         memberGroupRepository.findByCode(it)
-                                .orElseGet {
-                                    MemberGroup(
-                                            code = it,
-                                            name = it
-                                    ).let {
-                                        memberGroupRepository.save(it)
-                                    }
+                            .orElseGet {
+                                MemberGroup(
+                                    code = it,
+                                    name = it
+                                ).let {
+                                    memberGroupRepository.save(it)
                                 }
-                    })
-
-                }
-                .toSet()
-
+                            }
+                    }
+                )
+            }
+            .toSet()
     }
 }
 
@@ -292,5 +293,4 @@ private fun Cell.toPaymentFrequency(): PaymentFrequency? {
         "MONTHLY" -> PaymentFrequency.MONTHLY
         else -> null
     }
-
 }

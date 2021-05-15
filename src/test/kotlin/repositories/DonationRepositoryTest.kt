@@ -11,22 +11,19 @@ import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.feature.payment.repositories.PaymentMandateRepository
 import community.flock.eco.fundraising.ApplicationConfiguration
 import community.flock.eco.fundraising.model.Donation
-import org.junit.Assert.assertEquals
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
 import java.util.*
 
-@RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
-@ActiveProfiles(profiles = ["local"])
+@ActiveProfiles(profiles = ["develop"])
 @Import(ApplicationConfiguration::class)
 internal class DonationRepositoryTest {
 
@@ -56,33 +53,31 @@ internal class DonationRepositoryTest {
         val email = UUID.randomUUID().toString()
 
         val group = MemberGroup(
-                code = "TEST1",
-                name = "Test1"
+            code = "TEST1",
+            name = "Test1"
         ).let { memberGroupRepository.save(it) }
 
         val member = Member(
-                firstName = "DonateFirstName",
-                surName = "DonateSurName",
-                email = email,
-                groups = setOf(group)
+            firstName = "DonateFirstName",
+            surName = "DonateSurName",
+            email = email,
+            groups = mutableSetOf(group)
         ).let { memberRepository.save(it) }
 
         val mandate = PaymentMandate(
-                amount = 10.10,
-                frequency = PaymentFrequency.MONTHLY,
-                type = PaymentType.SEPA
+            amount = 10.10,
+            frequency = PaymentFrequency.MONTHLY,
+            type = PaymentType.SEPA
 
         ).let { paymentMandateRepository.save(it) }
 
         val donation = Donation(
-                member = member,
-                mandate = mandate
+            member = member,
+            mandate = mandate
         ).let { donationRepository.save(it) }
-
 
         val res = donationRepository.findByMemberId(donation.member!!.id).first()
 
         assertEquals("TEST1", res.member!!.groups.toList()[0].code)
     }
-
 }

@@ -18,14 +18,15 @@ import javax.annotation.PostConstruct
 
 @Component
 @ConditionalOnProperty(
-        "flock.fundraising.load-data.enabled",
-        "flock.fundraising.load-data.stub")
+    "flock.fundraising.load-data.enabled",
+    "flock.fundraising.load-data.stub"
+)
 class StubLoadData(
-        private val memberLoadData: MemberLoadData,
-        private val memberRepository: MemberRepository,
-        private val paymentLoadData: PaymentLoadData,
-        private val donationRepository: DonationRepository,
-        private val memberFieldService: MemberFieldService
+    private val memberLoadData: MemberLoadData,
+    private val memberRepository: MemberRepository,
+    private val paymentLoadData: PaymentLoadData,
+    private val donationRepository: DonationRepository,
+    private val memberFieldService: MemberFieldService
 ) : LoadData<Donation> {
 
     @Autowired
@@ -37,7 +38,7 @@ class StubLoadData(
         if (memberRepository.count() > 0) return
 
         val date = LocalDate
-                .now()
+            .now()
 
         this.load()
         generateTransactionsService.run(date.year, date.month)
@@ -52,27 +53,30 @@ class StubLoadData(
         val paymentMandateData = paymentLoadData.load(34)
 
         memberData
-                .map {
-                    it.copy(fields = it.fields
-                            .plus(NEWSLETTER.key to if (it.id.toInt() % 2 == 0) "true" else "false")
-                            .plus(TRANSACTIONAL_MAIL.key to if (it.id.toInt() % 2 == 0) "true" else "false")
-                            .plus(MAILCHIMP_STATUS.key to if (it.id.toInt() % 2 == 0) MailchimpMemberStatus.SUBSCRIBED.name else MailchimpMemberStatus.UNSUBSCRIBED.name))
-                }
-                .toList()
-                .let {
-                    memberRepository.saveAll(it)
-                }
+            .map {
+                it.copy(
+                    fields = it.fields
+                        .plus(NEWSLETTER.key to if (it.id.toInt() % 2 == 0) "true" else "false")
+                        .plus(TRANSACTIONAL_MAIL.key to if (it.id.toInt() % 2 == 0) "true" else "false")
+                        .plus(MAILCHIMP_STATUS.key to if (it.id.toInt() % 2 == 0) MailchimpMemberStatus.SUBSCRIBED.name else MailchimpMemberStatus.UNSUBSCRIBED.name)
+                        .toMutableMap()
+                )
+            }
+            .toList()
+            .let {
+                memberRepository.saveAll(it)
+            }
 
         return memberData
-                .mapIndexed { i, member ->
-                    Donation(
-                            mandate = paymentMandateData.toList()[i],
-                            member = member
-                    )
-                }
-                .toList()
-                .let {
-                    donationRepository.saveAll(it)
-                }
+            .mapIndexed { i, member ->
+                Donation(
+                    mandate = paymentMandateData.toList()[i],
+                    member = member
+                )
+            }
+            .toList()
+            .let {
+                donationRepository.saveAll(it)
+            }
     }
 }

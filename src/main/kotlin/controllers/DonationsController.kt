@@ -41,15 +41,16 @@ private val ibanRegex = "^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}\
 @RestController
 @RequestMapping("/api/donations")
 class DonationsController(
-        private val request: HttpServletRequest,
-        private val buckarooService: PaymentBuckarooService,
-        private val sepaService: PaymentSepaService,
-        private val memberRepository: MemberRepository,
-        private val memberGroupRepository: MemberGroupRepository,
-        private val memberFieldService: MemberFieldService,
-        private val paymentMandateRepository: PaymentMandateRepository,
-        private val paymentTransactionRepository: PaymentTransactionRepository,
-        private val donationRepository: DonationRepository) {
+    private val request: HttpServletRequest,
+    private val buckarooService: PaymentBuckarooService,
+    private val sepaService: PaymentSepaService,
+    private val memberRepository: MemberRepository,
+    private val memberGroupRepository: MemberGroupRepository,
+    private val memberFieldService: MemberFieldService,
+    private val paymentMandateRepository: PaymentMandateRepository,
+    private val paymentTransactionRepository: PaymentTransactionRepository,
+    private val donationRepository: DonationRepository
+) {
 
     @Value("\${flock.fundraising.donations.successPath:}")
     lateinit var successPath: String
@@ -58,47 +59,48 @@ class DonationsController(
     lateinit var failurePath: String
 
     data class Donate(
-            val payment: Payment,
-            val member: Member? = null,
-            val newsletter: Boolean,
-            val language: String?,
-            val agreedOnTerms: Boolean,
-            val group: String? = null,
-            val destination: String? = null
+        val payment: Payment,
+        val member: Member? = null,
+        val newsletter: Boolean,
+        val language: String?,
+        val agreedOnTerms: Boolean,
+        val group: String? = null,
+        val destination: String? = null
     )
 
     data class Payment(
-            val amount: Double,
-            val paymentType: PaymentType,
-            val issuer: String? = null,
-            val frequency: PaymentFrequency? = null,
-            val bankAccount: PaymentBankAccount? = null
+        val amount: Double,
+        val paymentType: PaymentType,
+        val issuer: String? = null,
+        val frequency: PaymentFrequency? = null,
+        val bankAccount: PaymentBankAccount? = null
     )
 
     data class DonationForm(
-            val mandate: PaymentMandate,
-            val member: Member?,
-            val destination: String? = null
+        val mandate: PaymentMandate,
+        val member: Member?,
+        val destination: String? = null
     )
 
     data class DonationStopForm(
-            val reason: String?
+        val reason: String?
     )
 
     @EventListener
     fun handleMergeMemberEvent(event: MergeMemberEvent) {
         event.mergedMembers
-                .flatMap { donationRepository.findByMemberId(it.id) }
-                .map { it.copy(member = event.member) }
-                .toList()
-                .let { donationRepository.saveAll(it) }
+            .flatMap { donationRepository.findByMemberId(it.id) }
+            .map { it.copy(member = event.member) }
+            .toList()
+            .let { donationRepository.saveAll(it) }
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
     fun findAll(
-            @RequestParam("s") search: String = "",
-            page: Pageable): ResponseEntity<List<Donation>> {
+        @RequestParam("s") search: String = "",
+        page: Pageable
+    ): ResponseEntity<List<Donation>> {
         val res = if (search.isEmpty()) {
             val sort = Sort.by(Sort.Direction.DESC, "id")
             val pageSort = PageRequest.of(page.pageNumber, page.pageSize, sort)
@@ -116,9 +118,7 @@ class DonationsController(
     @PreAuthorize("hasAuthority('DonationsAuthority.READ')")
     fun findById(@PathVariable id: Long): ResponseEntity<Donation> {
         return donationRepository.findById(id).toResponse()
-
     }
-
 
     @PostMapping("/donate")
     fun donate(@RequestBody donate: Donate): ResponseEntity<String> {
@@ -139,38 +139,38 @@ class DonationsController(
         }
 
         val groupDonation = donate.group
-                ?.let {
-                    memberGroupRepository
-                            .findByCode(it.toUpperCase())
-                            .toNullable()
-                            ?: MemberGroup(
-                                    name = it,
-                                    code = it.toUpperCase())
-                                    .run { memberGroupRepository.save(this) }
-                }
+            ?.let {
+                memberGroupRepository
+                    .findByCode(it.toUpperCase())
+                    .toNullable()
+                    ?: MemberGroup(
+                        name = it,
+                        code = it.toUpperCase()
+                    )
+                        .run { memberGroupRepository.save(this) }
+            }
 
         val member = donate.member
-                ?.copy(
-                        groups = groupDonation?.run { setOf(this) } ?: setOf(),
-                        fields = mapOf(
-                                NEWSLETTER.key to donate.newsletter.toString().toLowerCase(),
-                                AGREED_ON_TERMS.key to donate.agreedOnTerms.toString().toLowerCase(),
-                                TRANSACTIONAL_MAIL.key to "true",
-                                MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
-                        ),
-                        language = donate.language?.toLowerCase()
-                )
-                ?.run { memberRepository.save(this) }
-
+            ?.copy(
+                groups = groupDonation?.run { mutableSetOf(this) } ?: mutableSetOf(),
+                fields = mutableMapOf(
+                    NEWSLETTER.key to donate.newsletter.toString().toLowerCase(),
+                    AGREED_ON_TERMS.key to donate.agreedOnTerms.toString().toLowerCase(),
+                    TRANSACTIONAL_MAIL.key to "true",
+                    MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
+                ),
+                language = donate.language?.toLowerCase()
+            )
+            ?.run { memberRepository.save(this) }
 
         val successUrl = request.extractRequestor() + successPath
         val failureUrl = request.extractRequestor() + failurePath
 
         fun PaymentMandate.createDonation() {
             Donation(
-                    member = member,
-                    mandate = this,
-                    destination = donate.destination
+                member = member,
+                mandate = this,
+                destination = donate.destination
             ).let {
                 donationRepository.save(it)
             }
@@ -180,40 +180,41 @@ class DonationsController(
 
             PaymentType.IDEAL -> {
                 PaymentBuckarooService.PaymentMethod.Ideal(
-                        amount = donate.payment.amount,
-                        description = "Donation",
-                        issuer = donate.payment.issuer!!,
-                        successUrl = successUrl,
-                        failureUrl = failureUrl)
-                        .let { buckarooService.create(it) }
-                        .apply { mandate.createDonation() }
-                        .run { ResponseEntity.ok(redirectUrl) }
+                    amount = donate.payment.amount,
+                    description = "Donation",
+                    issuer = donate.payment.issuer!!,
+                    successUrl = successUrl,
+                    failureUrl = failureUrl
+                )
+                    .let { buckarooService.create(it) }
+                    .apply { mandate.createDonation() }
+                    .run { ResponseEntity.ok(redirectUrl) }
             }
 
             PaymentType.CREDIT_CARD -> {
                 PaymentBuckarooService.PaymentMethod.CreditCard(
-                        amount = donate.payment.amount,
-                        description = "Donation",
-                        issuer = donate.payment.issuer!!,
-                        successUrl = successUrl,
-                        failureUrl = failureUrl)
-                        .let { buckarooService.create(it) }
-                        .apply { mandate.createDonation() }
-                        .run { ResponseEntity.ok(redirectUrl) }
-
+                    amount = donate.payment.amount,
+                    description = "Donation",
+                    issuer = donate.payment.issuer!!,
+                    successUrl = successUrl,
+                    failureUrl = failureUrl
+                )
+                    .let { buckarooService.create(it) }
+                    .apply { mandate.createDonation() }
+                    .run { ResponseEntity.ok(redirectUrl) }
             }
             PaymentType.SEPA -> {
                 PaymentSepaService.PaymentSepa(
-                        amount = donate.payment.amount,
-                        bankAccount = donate.payment.bankAccount!!,
-                        frequency = donate.payment.frequency!!)
-                        .let { sepaService.create(it) }
-                        .apply { mandate.createDonation() }
-                        .run { ResponseEntity.ok(successUrl) }
+                    amount = donate.payment.amount,
+                    bankAccount = donate.payment.bankAccount!!,
+                    frequency = donate.payment.frequency!!
+                )
+                    .let { sepaService.create(it) }
+                    .apply { mandate.createDonation() }
+                    .run { ResponseEntity.ok(successUrl) }
             }
 
             PaymentType.CACHE -> throw error("cannot make cache donations")
-
         }
     }
 
@@ -229,10 +230,10 @@ class DonationsController(
     fun create(@RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         val donation = Donation(
-                member = form.member
-                        ?.let { memberRepository.save(it) },
-                mandate = paymentMandateRepository.save(form.mandate),
-                destination = form.destination
+            member = form.member
+                ?.let { memberRepository.save(it) },
+            mandate = paymentMandateRepository.save(form.mandate),
+            destination = form.destination
         ).let {
             donationRepository.save(it)
         }
@@ -245,39 +246,35 @@ class DonationsController(
     fun update(@PathVariable id: Long, @RequestBody form: DonationForm): ResponseEntity<Donation> {
         memberFieldService.init()
         return donationRepository.findById(id)
-                .map { donation ->
-                    donation.copy(
-                            member = form.member
-                                    ?.let { memberRepository.save(it) },
-                            mandate = paymentMandateRepository.save(form.mandate),
-                            destination = form.destination
-                    ).let {
-                        donationRepository.save(it)
-                    }
-
+            .map { donation ->
+                donation.copy(
+                    member = form.member
+                        ?.let { memberRepository.save(it) },
+                    mandate = paymentMandateRepository.save(form.mandate),
+                    destination = form.destination
+                ).let {
+                    donationRepository.save(it)
                 }
-                .toResponse()
-
+            }
+            .toResponse()
     }
-
 
     @PostMapping("/{id}/stop")
     @PreAuthorize("hasAuthority('DonationsAuthority.WRITE')")
     fun stop(@PathVariable id: Long, @RequestBody form: DonationStopForm) {
 
         donationRepository.findById(id).ifPresent { donation ->
-
             form.reason?.let { reason ->
                 donation.member?.let { member ->
                     member
-                            .copy(fields = member.fields + (TERMINATION_REASON.key to reason))
-                            .let { memberRepository.save(it) }
+                        .copy(fields = (member.fields + (TERMINATION_REASON.key to reason)).toMutableMap())
+                        .let { memberRepository.save(it) }
                 }
             }
 
             donation.mandate
-                    .copy(endDate = LocalDate.now())
-                    .let { paymentMandateRepository.save(it) }
+                .copy(endDate = LocalDate.now())
+                .let { paymentMandateRepository.save(it) }
         }
     }
 
@@ -286,16 +283,16 @@ class DonationsController(
     @Transactional
     fun delete(@PathVariable id: Long) {
         donationRepository.findById(id)
-                .toNullable()
-                ?.let {
-                    val mandateId = it.mandate.id
-                    val transactionIds = it.mandate.transactions.map { it.id }
-                    donationRepository.deleteById(it.id)
-                    transactionIds.forEach{
-                        paymentTransactionRepository.deleteById(it)
-                    }
-                    paymentMandateRepository.deleteById(mandateId)
+            .toNullable()
+            ?.let {
+                val mandateId = it.mandate.id
+                val transactionIds = it.mandate.transactions.map { it.id }
+                donationRepository.deleteById(it.id)
+                transactionIds.forEach {
+                    paymentTransactionRepository.deleteById(it)
                 }
+                paymentMandateRepository.deleteById(mandateId)
+            }
     }
 
     private fun HttpServletRequest.extractRequestor(): String = when {
@@ -305,22 +302,20 @@ class DonationsController(
             val host = this.getHeader("x-forwarded-host")
             val port = this.getHeader("x-forwarded-port").toInt()
             UriComponentsBuilder.newInstance()
-                    .scheme(proto)
-                    .host(host)
-                    .port(port)
-                    .build()
-                    .toUriString()
+                .scheme(proto)
+                .host(host)
+                .port(port)
+                .build()
+                .toUriString()
         }
         else -> {
             val url = URL(this.requestURL.toString())
             UriComponentsBuilder.newInstance()
-                    .scheme(url.protocol)
-                    .host(url.host)
-                    .port(url.port)
-                    .build()
-                    .toUriString()
+                .scheme(url.protocol)
+                .host(url.host)
+                .port(url.port)
+                .build()
+                .toUriString()
         }
     }
-
 }
-

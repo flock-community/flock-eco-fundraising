@@ -23,8 +23,8 @@ import javax.xml.transform.stream.StreamResult
 @RestController
 @RequestMapping("/api/collection/")
 class CollectionController(
-        private val paymentTransactionRepository: PaymentTransactionRepository,
-        private val paymentSepaXmlService: PaymentSepaXmlService
+    private val paymentTransactionRepository: PaymentTransactionRepository,
+    private val paymentSepaXmlService: PaymentSepaXmlService
 ) {
 
     @Value("\${flock.fundraising.donations.sepa.privateIdentification:@null}")
@@ -61,25 +61,25 @@ class CollectionController(
         val startDate = date.with(TemporalAdjusters.firstDayOfMonth())
         val endDate = date.with(TemporalAdjusters.lastDayOfMonth())
         val transactions = paymentTransactionRepository
-                .findBetweenDate(startDate, endDate)
-                .filter { it.status == PaymentTransactionStatus.PENDING }
-                .filter { it.mandate.type == PaymentType.SEPA }
+            .findBetweenDate(startDate, endDate)
+            .filter { it.status == PaymentTransactionStatus.PENDING }
+            .filter { it.mandate.type == PaymentType.SEPA }
 
         val sepa = PaymentSepaXmlService.Sepa(
-                id = hash(transactions),
-                privateIdentification = sepaPrivateIdentification,
-                message = sepaMessage,
-                organisation = PaymentSepaXmlService.SepaOrganisation(
-                        name = sepaName,
-                        iban = sepaIban.replace(" ", ""),
-                        bic = sepaBic.replace(" ", ""),
-                        address1 = sepaAddress1,
-                        address2 = sepaAddress2,
-                        country = PaymentSepaXmlService.SepaCountry.valueOf(sepaCountry)
-                ),
-                collectionDateTime = LocalDateTime.now()
-                        .withDayOfMonth(dayOfMonth.toInt()),
-                transactions = transactions
+            id = hash(transactions),
+            privateIdentification = sepaPrivateIdentification,
+            message = sepaMessage,
+            organisation = PaymentSepaXmlService.SepaOrganisation(
+                name = sepaName,
+                iban = sepaIban.replace(" ", ""),
+                bic = sepaBic.replace(" ", ""),
+                address1 = sepaAddress1,
+                address2 = sepaAddress2,
+                country = PaymentSepaXmlService.SepaCountry.valueOf(sepaCountry)
+            ),
+            collectionDateTime = LocalDateTime.now()
+                .withDayOfMonth(dayOfMonth.toInt()),
+            transactions = transactions
         )
 
         val doc = paymentSepaXmlService.generate(sepa)
@@ -90,20 +90,16 @@ class CollectionController(
         val writer = StringWriter()
         transformer.transform(DOMSource(doc), StreamResult(writer))
         return writer.buffer.toString()
-
     }
-
 
     private fun hash(transactions: List<PaymentTransaction>): String {
         return transactions
-                .sumBy { it.hashCode() }
-                .let {
-                    DigestUtils.sha256Hex(it.toString())
-                }
-                .let {
-                    it.substring(0, 32)
-                }
-
+            .sumBy { it.hashCode() }
+            .let {
+                DigestUtils.sha256Hex(it.toString())
+            }
+            .let {
+                it.substring(0, 32)
+            }
     }
 }
-
