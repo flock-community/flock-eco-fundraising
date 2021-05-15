@@ -5,6 +5,7 @@ import {HashRouter, Redirect, Route} from 'react-router-dom'
 import AppLayout from './AppLayout'
 
 import DashboardFeature from '../dashboard/DashboardFeature'
+import MonthFeature from '../month/MonthFeature'
 import DonationFeature from '../donation/DonationFeature'
 import MailchimpFeature from '../mailchimp/MailchimpFeature'
 import TransactionFeature from '../transaction/TransactionFeature'
@@ -82,6 +83,10 @@ class App extends React.Component {
 
             <Route path='/dashboard' exact render={(props) => (
               <DashboardFeature/>
+            )}/>
+
+            <Route path='/month' exact render={(props) => (
+              <MonthFeature/>
             )}/>
 
             <Route path='/members' exact render={(props) => (

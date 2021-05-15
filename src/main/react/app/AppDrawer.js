@@ -10,7 +10,6 @@ import IconButton from '@material-ui/core/IconButton';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
-
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -23,6 +22,7 @@ import ProfileIcon from '@material-ui/icons/Person';
 import SettingsIcon from '@material-ui/icons/SettingsSharp';
 import MailIcon from '@material-ui/icons/Mail';
 import SepaIcon from '@material-ui/icons/CompareArrows';
+import SpeedIcon from '@material-ui/icons/Speed';
 
 
 import AuthorityUtil from "../utils/AuthorityUtil";
@@ -119,6 +119,15 @@ class AppDrawer extends React.Component {
                 <DashboardIcon/>
               </ListItemIcon>
               <ListItemText primary="Dashboard"/>
+            </ListItem>
+          </div>
+
+          <div>
+            <ListItem button component="a" href="#/month">
+              <ListItemIcon>
+                <SpeedIcon/>
+              </ListItemIcon>
+              <ListItemText primary="Month"/>
             </ListItem>
           </div>
 
