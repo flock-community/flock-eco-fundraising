@@ -12,26 +12,30 @@ import java.util.*
 @Service
 interface DonationRepository : PagingAndSortingRepository<Donation, Long>, JpaSpecificationExecutor<Donation> {
 
-    @Query("SELECT distinct don " +
+    @Query(
+        "SELECT distinct don " +
             "FROM Donation don " +
             "LEFT JOIN FETCH don.member mem " +
             "LEFT JOIN FETCH don.mandate man " +
             "LEFT JOIN FETCH mem.groups " +
             "LEFT JOIN FETCH mem.fields " +
-            "WHERE mem.id = ?1")
+            "WHERE mem.id = ?1"
+    )
     fun findByMemberId(id: Long): List<Donation>
 
-    @Query("SELECT distinct don " +
+    @Query(
+        "SELECT distinct don " +
             "FROM Donation don " +
             "LEFT JOIN FETCH don.member mem " +
             "LEFT JOIN FETCH don.mandate man " +
             "LEFT JOIN FETCH mem.groups " +
             "LEFT JOIN FETCH mem.fields " +
-            "WHERE man.code = ?1")
+            "WHERE man.code = ?1"
+    )
     fun findByCode(code: String): Optional<Donation>
 
-
-    @Query(value = "SELECT distinct don " +
+    @Query(
+        value = "SELECT distinct don " +
             "FROM Donation don " +
             "LEFT JOIN FETCH don.member mem " +
             "LEFT JOIN FETCH don.mandate man " +
@@ -41,13 +45,12 @@ interface DonationRepository : PagingAndSortingRepository<Donation, Long>, JpaSp
             "OR mem.surName LIKE %?1% " +
             "OR mem.email LIKE %?1% " +
             "ORDER BY mem.surName",
-            countQuery = "SELECT COUNT(don) " +
-                    "FROM Donation don " +
-                    "LEFT JOIN don.member mem " +
-                    "WHERE  mem.firstName LIKE %?1% " +
-                    "OR mem.surName LIKE %?1% " +
-                    "OR mem.email LIKE %?1% ")
+        countQuery = "SELECT COUNT(don) " +
+            "FROM Donation don " +
+            "LEFT JOIN don.member mem " +
+            "WHERE  mem.firstName LIKE %?1% " +
+            "OR mem.surName LIKE %?1% " +
+            "OR mem.email LIKE %?1% "
+    )
     fun findBySearch(search: String, page: Pageable): Page<Donation>
 }
-
-

@@ -24,10 +24,10 @@ import javax.annotation.PostConstruct
 @Service
 @ConditionalOnProperty("flock.fundraising.mailchimp.enabled", havingValue = "true", matchIfMissing = true)
 class MailchimpService(
-        private val memberService: MemberService,
-        private val memberRepository: MemberRepository,
-        private val memberGroupRepository: MemberGroupRepository,
-        private val mailchimpClient: MailchimpClient
+    private val memberService: MemberService,
+    private val memberRepository: MemberRepository,
+    private val memberGroupRepository: MemberGroupRepository,
+    private val mailchimpClient: MailchimpClient
 ) {
 
     private val interestCategory: String = "Doneasy"
@@ -55,64 +55,70 @@ class MailchimpService(
     fun init() {
         category = findInterestsCategory()
         interests = mailchimpClient.getInterests(listId, category.id)
-                .map { Interest.valueOf(it.name) to it }
-                .toMap()
+            .map { Interest.valueOf(it.name) to it }
+            .toMap()
     }
 
     @EventListener
     fun handleMemberEvent(event: MemberEvent) {
         val classes = arrayOf(
-                CreateMemberEvent::class,
-                UpdateMemberEvent::class)
+            CreateMemberEvent::class,
+            UpdateMemberEvent::class
+        )
         val member = event.member
         if (event::class in classes && member.email != null) {
             syncMember(member)
         }
     }
 
-
     @EventListener
     fun handleMailchimpWebhookEvent(event: MailchimpWebhookEvent) {
         if (listOf(SUBSCRIBE, UNSUBSCRIBE, PROFILE).contains(event.type)) {
             val activeList = memberService.findAllByEmail(event.email)
-                    .filter { it.isActive() }
+                .filter { it.isActive() }
 
             if (activeList.isNotEmpty()) {
                 activeList
-                        .map {
-                            it.copy(
-                                    fields = it.fields
-                                            .plus(NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests))
-                                            .plus(TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests))
-                                            .plus(MAILCHIMP_STATUS.key to (event.type.getStatus()?.name
-                                                    ?: it.fields.getValue(MAILCHIMP_STATUS.key))))
-                        }
-                        .map {
-                            if (activeList.size == 1) {
-                                it.copy(
-                                        firstName = event.fields["FNAME"] ?: "<empty>",
-                                        surName = event.fields["LNAME"] ?: "<empty>",
-                                        language =  event.fields["LANGUAGE"]?.toLowerCase()
+                    .map {
+                        it.copy(
+                            fields = it.fields
+                                .plus(NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests))
+                                .plus(TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests))
+                                .plus(
+                                    MAILCHIMP_STATUS.key to (
+                                        event.type.getStatus()?.name
+                                            ?: it.fields.getValue(MAILCHIMP_STATUS.key)
+                                        )
                                 )
-                            } else {
-                                it
-                            }
+                                .toMutableMap()
+                        )
+                    }
+                    .map {
+                        if (activeList.size == 1) {
+                            it.copy(
+                                firstName = event.fields["FNAME"] ?: "<empty>",
+                                surName = event.fields["LNAME"] ?: "<empty>",
+                                language = event.fields["LANGUAGE"]?.toLowerCase()
+                            )
+                        } else {
+                            it
                         }
-                        .let {
-                            memberRepository.saveAll(it)
-                        }
+                    }
+                    .let {
+                        memberRepository.saveAll(it)
+                    }
             } else {
                 Member(
-                        firstName = event.fields["FNAME"] ?: "<empty>",
-                        surName = event.fields["LNAME"] ?: "<empty>",
-                        email = event.email,
-                        status = MemberStatus.NEW,
-                        fields = mapOf(
-                                NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests),
-                                TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests),
-                                MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
-                        ),
-                        language =  event.fields["LANGUAGE"]?.toLowerCase()
+                    firstName = event.fields["FNAME"] ?: "<empty>",
+                    surName = event.fields["LNAME"] ?: "<empty>",
+                    email = event.email,
+                    status = MemberStatus.NEW,
+                    fields = mutableMapOf(
+                        NEWSLETTER.key to Interest.NEWSLETTER.inList(event.interests),
+                        TRANSACTIONAL_MAIL.key to Interest.TRANSACTIONAL.inList(event.interests),
+                        MAILCHIMP_STATUS.key to MailchimpMemberStatus.SUBSCRIBED.name
+                    ),
+                    language = event.fields["LANGUAGE"]?.toLowerCase()
                 ).run { memberRepository.save(this) }
             }
         }
@@ -120,31 +126,30 @@ class MailchimpService(
 
     fun syncGroups() {
         memberGroupRepository.findAll()
-                .forEach {
-                    mailchimpClient.postSegment(listId, it.code)
-                }
+            .forEach {
+                mailchimpClient.postSegment(listId, it.code)
+            }
     }
 
     fun syncMembers() {
         memberRepository
-                .findAll()
-                .forEach {
-                    syncMember(it)
-                }
+            .findAll()
+            .forEach {
+                syncMember(it)
+            }
     }
 
     private fun findInterestsCategory() = mailchimpClient
-            .getInterestsCategories(listId)
-            .find { it.title == interestCategory }
-            ?: MailchimpInterestCategory(id = "0", title = interestCategory, type = MailchimpInterestCategoryType.CHECKBOXES)
-                    .let { mailchimpClient.postInterestsCategories(listId, it) }
-                    ?.also { category ->
-                        Interest.values().forEach {
-                            mailchimpClient.postInterests(listId, category.id, MailchimpInterest(name = it.name))
-                        }
-                    }
-            ?: throw RuntimeException("Interests category not found")
-
+        .getInterestsCategories(listId)
+        .find { it.title == interestCategory }
+        ?: MailchimpInterestCategory(id = "0", title = interestCategory, type = MailchimpInterestCategoryType.CHECKBOXES)
+            .let { mailchimpClient.postInterestsCategories(listId, it) }
+            ?.also { category ->
+                Interest.values().forEach {
+                    mailchimpClient.postInterests(listId, category.id, MailchimpInterest(name = it.name))
+                }
+            }
+        ?: throw RuntimeException("Interests category not found")
 
     private fun syncMember(member: Member) {
         try {
@@ -165,29 +170,30 @@ class MailchimpService(
 
     private fun constructMailchimpMember(member: Member): MailchimpMember {
         val transactional = member.getFieldValue(TRANSACTIONAL_MAIL)
-                ?.toBoolean()
-                ?: true
+            ?.toBoolean()
+            ?: true
         val newsletter = member.getFieldValue(NEWSLETTER)
-                ?.toBoolean()
-                ?: false
+            ?.toBoolean()
+            ?: false
         val status = member.getFieldValue(MAILCHIMP_STATUS)
-                ?.let { MailchimpMemberStatus.valueOf(it) }
-                ?: MailchimpMemberStatus.SUBSCRIBED
+            ?.let { MailchimpMemberStatus.valueOf(it) }
+            ?: MailchimpMemberStatus.SUBSCRIBED
         return MailchimpMember(
-                email = member.email ?: "",
-                status = status,
-                tags = member.groups
-                        .map { it.code }
-                        .toSet(),
-                fields = mapOf(
-                        "FNAME" to (member.infix?.let { member.firstName + " " + it } ?: member.firstName),
-                        "LNAME" to member.surName,
-                        "LANGUAGE" to member.language?.toUpperCase()
-                ),
-                language = member.language,
-                interests = mapOf(
-                        interests.getValue(Interest.TRANSACTIONAL).id to transactional,
-                        interests.getValue(Interest.NEWSLETTER).id to newsletter)
+            email = member.email ?: "",
+            status = status,
+            tags = member.groups
+                .map { it.code }
+                .toSet(),
+            fields = mutableMapOf(
+                "FNAME" to (member.infix?.let { member.firstName + " " + it } ?: member.firstName),
+                "LNAME" to member.surName,
+                "LANGUAGE" to member.language?.toUpperCase()
+            ),
+            language = member.language,
+            interests = mutableMapOf(
+                interests.getValue(Interest.TRANSACTIONAL).id to transactional,
+                interests.getValue(Interest.NEWSLETTER).id to newsletter
+            )
         )
     }
 
@@ -198,7 +204,6 @@ class MailchimpService(
     }
 
     private infix fun Interest.inList(interests: Set<String>) = interests
-            .contains(this.name)
-            .toString()
-
+        .contains(this.name)
+        .toString()
 }

@@ -13,8 +13,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 
-import MemberGroupFeature from '@flock-community/flock-eco-feature-member/src/main/react/member_group/MemberGroupFeature'
-import MemberFieldFeature from '@flock-community/flock-eco-feature-member/src/main/react/member_field/MemberFieldFeature'
+import {MemberGroupFeature} from '@flock-community/flock-eco-feature-member'
+import {MemberFieldFeature} from '@flock-community/flock-eco-feature-member'
 
 import SystemConfigurationFeature from '../settings/system_configuration/SystemConfigurationFeature'
 

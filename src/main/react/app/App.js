@@ -9,8 +9,8 @@ import DonationFeature from '../donation/DonationFeature'
 import MailchimpFeature from '../mailchimp/MailchimpFeature'
 import TransactionFeature from '../transaction/TransactionFeature'
 
-import {MemberFeature} from '@flock-community/flock-eco-feature-member/src/main/react/member/MemberFeature'
-import {UserFeature} from '@flock-community/flock-eco-feature-user/src/main/react/user/UserFeature'
+import {MemberFeature} from '@flock-community/flock-eco-feature-member'
+import {UserFeature} from '@flock-community/flock-eco-feature-user'
 
 import AppSettings from './AppSettings'
 import AppSpinner from './AppSpinner'

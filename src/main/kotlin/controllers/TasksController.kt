@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/tasks")
 class TasksController(
-        val generateTransactionsService: GenerateTransactionsService) {
+    val generateTransactionsService: GenerateTransactionsService
+) {
 
     @GetMapping("/transactions")
     fun transactions(): ResponseEntity<Unit> {
         generateTransactionsService.run()
         return ResponseEntity.noContent().build()
     }
-
 }

@@ -7,19 +7,18 @@ import javax.persistence.*
 @Entity
 data class Donation(
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        val id: Long = 0,
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    val id: Long = 0,
 
-        val destination: String? = null,
+    val destination: String? = null,
 
-        val language: String? = null,
+    val language: String? = null,
 
-        @ManyToOne()
-        val member: Member?,
+    @ManyToOne()
+    val member: Member?,
 
-        @ManyToOne()
-        val mandate: PaymentMandate
+    @ManyToOne()
+    val mandate: PaymentMandate
 
 )
-

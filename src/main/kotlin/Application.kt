@@ -10,21 +10,20 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
-
 @Configuration
-@SpringBootApplication(exclude = arrayOf(
+@SpringBootApplication(
+    exclude = arrayOf(
         RepositoryRestMvcAutoConfiguration::class,
         UserDetailsServiceAutoConfiguration::class
-))
-@Import(ApplicationConfiguration::class,
-        WebMvcConfig::class,
-        WebSecurityConfig::class)
+    )
+)
+@Import(
+    ApplicationConfiguration::class,
+    WebMvcConfig::class,
+    WebSecurityConfig::class
+)
 class Application : SpringBootServletInitializer()
 
 fun main(args: Array<String>) {
     SpringApplication.run(Application::class.java, *args)
 }
-
-
-
-

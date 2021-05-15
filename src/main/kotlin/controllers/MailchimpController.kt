@@ -12,7 +12,7 @@ import org.springframework.web.servlet.ModelAndView
 @RequestMapping("/api/mailchimp")
 @ConditionalOnProperty("flock.fundraising.mailchimp.enabled", havingValue = "true", matchIfMissing = true)
 class MailchimpController(
-        private val mailchimpService: MailchimpService
+    private val mailchimpService: MailchimpService
 ) {
 
     @Value("\${flock.eco.feature.mailchimp.listId:}")
@@ -20,20 +20,17 @@ class MailchimpController(
 
     @RequestMapping("/members")
     fun getMembers(): ModelAndView {
-        return ModelAndView("forward:/api/mailchimp/lists/$listId/members");
-
+        return ModelAndView("forward:/api/mailchimp/lists/$listId/members")
     }
 
     @RequestMapping("/interest-categories")
     fun getInterestCategories(): ModelAndView {
         return ModelAndView("forward:/api/mailchimp/lists/$listId/interest-categories")
-
     }
 
     @GetMapping("/sync")
     fun sync() {
         mailchimpService.syncGroups()
         mailchimpService.syncMembers()
-
     }
 }
