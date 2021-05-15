@@ -60,7 +60,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
         when {
             environment.activeProfiles.isEmpty() -> userSecurityService.testLogin(http)
-            "local" in environment.activeProfiles -> userSecurityService.testLogin(http)
+            "develop" in environment.activeProfiles -> userSecurityService.testLogin(http)
             else -> userSecurityService.googleLogin(http)
         }
     }
