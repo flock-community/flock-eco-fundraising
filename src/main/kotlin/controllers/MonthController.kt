@@ -11,19 +11,19 @@ import java.time.YearMonth
 @RestController
 @RequestMapping("/api/month")
 class MonthController(
-        private val monthService: MonthService
+    private val monthService: MonthService
 ) {
 
     data class MonthModel(
-            val transactionSumByDestinationAndType: List<TransactionSum>,
+        val transactionSumByDestinationAndType: List<TransactionSum>,
     )
 
     @GetMapping()
     fun index(
-            @RequestParam yearMonth: YearMonth
+        @RequestParam yearMonth: YearMonth
     ): MonthModel {
         return MonthModel(
-                transactionSumByDestinationAndType = monthService.transactionSumByDestinationAndType(yearMonth),
+            transactionSumByDestinationAndType = monthService.transactionSumByDestinationAndType(yearMonth),
         )
     }
 }
