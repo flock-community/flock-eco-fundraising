@@ -23,7 +23,7 @@ import java.util.*
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
-@ActiveProfiles(profiles = ["local"])
+@ActiveProfiles(profiles = ["develop"])
 @Import(ApplicationConfiguration::class)
 internal class DonationRepositoryTest {
 
