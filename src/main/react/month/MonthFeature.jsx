@@ -98,7 +98,7 @@ class MonthFeature extends React.Component {
                             {data.filter(it => it.type === type).map(it =>
                                 <TableRow key={type + it.destination}>
                                     <TableCell>{it.destination}</TableCell>
-                                    <TableCell>€ {it.total}</TableCell>
+                                    <TableCell width={200}>€ {it.total}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
