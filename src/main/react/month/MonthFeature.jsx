@@ -20,7 +20,7 @@ class MonthFeature extends React.Component {
 
     loadData() {
         const {year, month} = this.state;
-        fetch(`/api/month?yearMonth=${year}-${month.padStart(2, "0")}`)
+        fetch(`/api/month?yearMonth=${year}-${String(month).padStart(2, "0")}`)
             .then(res => {
                 return res.json()
             })
