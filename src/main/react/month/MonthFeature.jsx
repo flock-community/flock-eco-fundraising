@@ -42,24 +42,15 @@ class MonthFeature extends React.Component {
             return this.setState({
                 year: this.state.year - 1,
                 month: 12
-            }, () => {
-                this.loadData()
-            })
+            }, this.loadData)
         }
         if (month === 13) {
             return this.setState({
                 year: this.state.year + 1,
                 month: 1
-            }, () => {
-                this.loadData()
-            })
-        } else {
-            return this.setState({
-                month
-            }, () => {
-                this.loadData()
-            })
+            }, this.loadData)
         }
+        return this.setState({ month }, this.loadData)
     }
 
     renderHeader() {
