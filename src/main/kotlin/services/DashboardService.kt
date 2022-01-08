@@ -39,6 +39,13 @@ class DashboardService(
         "DECEMBER"
     )
 
+    val recurringFrequencies = listOf(
+        PaymentFrequency.YEARLY,
+        PaymentFrequency.HALF_YEARLY,
+        PaymentFrequency.QUARTERLY,
+        PaymentFrequency.MONTHLY
+    )
+
     fun newMembers(): List<Member> {
         val sort = Sort.by(Sort.Direction.DESC, "id")
         val page = PageRequest.of(0, 5, sort)
@@ -84,6 +91,7 @@ class DashboardService(
         return mandates
             .filter { it.type == PaymentType.SEPA }
             .filter { it.endDate == null }
+            .filter { recurringFrequencies.contains(it.frequency) }
             .map { calculateAmountPerYear(it.frequency, it.amount) }
             .sum()
     }
@@ -96,10 +104,11 @@ class DashboardService(
         )
 
         val query =
-            "SELECT UPPER(d.destination), UPPER(d.mandate.frequency), SUM(d.mandate.amount) FROM Donation d WHERE d.mandate.endDate IS NULL AND d.mandate.type = :type GROUP BY UPPER(d.destination), UPPER(d.mandate.frequency)"
+            "SELECT UPPER(d.destination), UPPER(d.mandate.frequency), SUM(d.mandate.amount) FROM Donation d WHERE d.mandate.endDate IS NULL AND d.mandate.type = :type AND d.mandate.frequency IN :frequencies GROUP BY UPPER(d.destination), UPPER(d.mandate.frequency)"
         val results = entityManager
             .createQuery(query)
             .setParameter("type", PaymentType.SEPA)
+            .setParameter("frequencies", recurringFrequencies)
             .resultList
             .map { it as Array<*> }
             .map {
