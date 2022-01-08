@@ -105,6 +105,19 @@ class DonationFeature extends React.Component {
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
+                  Total collection value by destination
+                </Typography>
+                {Object.keys(this.state.data.totalCollectionValueDestination).map(key => {
+                  return (<Typography component="p" variant="body1">
+                    {key}: {this.money.format(this.state.data.totalCollectionValueDestination[key])}
+                  </Typography>)
+                })}
+              </CardContent>
+            </Card>
+
+            <Card className={classes.card}>
+              <CardContent>
+                <Typography component="h5" variant="h5">
                   Total per year
                 </Typography>
                 {Object.keys(this.state.data.totalDonationsPerYear).map(key => {
@@ -132,11 +145,11 @@ class DonationFeature extends React.Component {
             <Card className={classes.card}>
               <CardContent>
                 <Typography component="h5" variant="h5">
-                  Total donations by destination once
+                  Total donations by destination
                 </Typography>
-                {Object.keys(this.state.data.totalDonationsDestinationOnce).map(key => {
+                {Object.keys(this.state.data.totalDonationsDestination).map(key => {
                   return (<Typography component="p" variant="body1">
-                    {key}: {this.money.format(this.state.data.totalDonationsDestinationOnce[key])}
+                    {key}: {this.money.format(this.state.data.totalDonationsDestination[key])}
                   </Typography>)
                 })}
               </CardContent>

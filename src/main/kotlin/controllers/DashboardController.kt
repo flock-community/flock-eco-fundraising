@@ -17,14 +17,15 @@ class DashboardController(
 ) {
 
     data class DashboardModel(
-        val totalCollectionValue: Int,
+        val totalCollectionValue: Double,
+        val totalCollectionValueDestination: Map<String, Double>,
         val totalDonationsOnce: Map<String, Double>,
         val totalMembers: Int,
         val totalMandates: Int,
         val newMembers: List<Member>,
         val newDonationsOnce: List<Donation>,
         val newDonationsRecurring: List<Donation>,
-        val totalDonationsDestinationOnce: Map<String, Double>,
+        val totalDonationsDestination: Map<String, Double>,
         val totalDonationsPerYear: Map<String, Double>
     )
 
@@ -32,14 +33,15 @@ class DashboardController(
     fun index(): DashboardModel {
         val mandates = paymentMandateRepository.findAll().toList()
         return DashboardModel(
-            totalCollectionValue = dashboardService.countTotalMandates(mandates),
+            totalCollectionValue = dashboardService.sumTotalCollectionValue(mandates),
+            totalCollectionValueDestination = dashboardService.sumTotalCollectionValueByDestination(mandates),
             totalDonationsOnce = dashboardService.countTotalDonations(mandates),
             totalMandates = dashboardService.countMandate(mandates),
             totalMembers = dashboardService.countMembers(),
             newMembers = dashboardService.newMembers(),
             newDonationsOnce = dashboardService.newDonationsOnce(),
             newDonationsRecurring = dashboardService.newDonationsRecurring(),
-            totalDonationsDestinationOnce = dashboardService.totalDonationsDestinationOnce(),
+            totalDonationsDestination = dashboardService.totalDonationsByDestination(),
             totalDonationsPerYear = dashboardService.totalDonationsPerYear()
         )
     }

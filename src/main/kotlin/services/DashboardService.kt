@@ -4,7 +4,11 @@ import community.flock.eco.feature.member.model.Member
 import community.flock.eco.feature.member.model.MemberStatus
 import community.flock.eco.feature.member.repositories.MemberRepository
 import community.flock.eco.feature.member.specifications.MemberSpecification
-import community.flock.eco.feature.payment.model.*
+import community.flock.eco.feature.payment.model.PaymentFrequency
+import community.flock.eco.feature.payment.model.PaymentMandate
+import community.flock.eco.feature.payment.model.PaymentTransaction
+import community.flock.eco.feature.payment.model.PaymentTransactionStatus
+import community.flock.eco.feature.payment.model.PaymentType
 import community.flock.eco.fundraising.model.Donation
 import community.flock.eco.fundraising.repositories.DonationRepository
 import org.springframework.data.domain.PageRequest
@@ -76,18 +80,46 @@ class DashboardService(
             .count()
     }
 
-    fun countTotalMandates(mandates: List<PaymentMandate>): Int {
+    fun sumTotalCollectionValue(mandates: List<PaymentMandate>): Double {
         return mandates
             .filter { it.type == PaymentType.SEPA }
             .filter { it.endDate == null }
-            .map { calculateAmount(it) }
+            .map { calculateAmountPerYear(it.frequency, it.amount) }
             .sum()
-            .toInt()
+    }
+
+    fun sumTotalCollectionValueByDestination(mandates: List<PaymentMandate>): Map<String, Double> {
+        data class Result(
+            val destination: String?,
+            val frequency: PaymentFrequency,
+            val amount: Double
+        )
+
+        val query =
+            "SELECT UPPER(d.destination), UPPER(d.mandate.frequency), SUM(d.mandate.amount) FROM Donation d WHERE d.mandate.endDate IS NULL AND d.mandate.type = :type GROUP BY UPPER(d.destination), UPPER(d.mandate.frequency)"
+        val results = entityManager
+            .createQuery(query)
+            .setParameter("type", PaymentType.SEPA)
+            .resultList
+            .map { it as Array<*> }
+            .map {
+                Result(
+                    destination = it[0] as String?,
+                    frequency = it[1] as PaymentFrequency,
+                    amount = it[2] as Double
+                )
+            }
+
+        return results
+            .groupingBy { it.destination ?: "UNKNOWN" }
+            .fold(0.0) { acc, cur -> acc + calculateAmountPerYear(cur.frequency, cur.amount) }
+
     }
 
     fun countTotalDonations(mandates: List<PaymentMandate>): Map<String, Double> {
         val date = LocalDate.now().minusYears(1)
-        val query = "SELECT YEAR(t.created), MONTH(t.created), SUM(t.amount) FROM PaymentTransaction t WHERE t.status = :status GROUP BY YEAR(t.created), MONTH(t.created) ORDER BY YEAR(t.created), MONTH(t.created)"
+        val query =
+            "SELECT YEAR(t.created), MONTH(t.created), SUM(t.amount) FROM PaymentTransaction t WHERE t.status = :status GROUP BY YEAR(t.created), MONTH(t.created) ORDER BY YEAR(t.created), MONTH(t.created)"
         return entityManager
             .createQuery(query)
             .setParameter("status", PaymentTransactionStatus.SUCCESS)
@@ -98,8 +130,9 @@ class DashboardService(
             .toMap()
     }
 
-    fun totalDonationsDestinationOnce(): Map<String, Double> {
-        val query = "SELECT UPPER(d.destination), SUM(t.amount) FROM Donation d JOIN d.mandate.transactions t WHERE t.status = :status GROUP BY UPPER(d.destination)"
+    fun totalDonationsByDestination(): Map<String, Double> {
+        val query =
+            "SELECT UPPER(d.destination), SUM(t.amount) FROM Donation d JOIN d.mandate.transactions t WHERE t.status = :status GROUP BY UPPER(d.destination)"
         return entityManager
             .createQuery(query)
             .setParameter("status", PaymentTransactionStatus.SUCCESS)
@@ -110,7 +143,8 @@ class DashboardService(
     }
 
     fun totalDonationsPerYear(): Map<String, Double> {
-        val query = "SELECT YEAR(t.created), SUM(t.amount) FROM PaymentTransaction t WHERE t.status = :status GROUP BY YEAR(t.created)"
+        val query =
+            "SELECT YEAR(t.created), SUM(t.amount) FROM PaymentTransaction t WHERE t.status = :status GROUP BY YEAR(t.created)"
         return entityManager
             .createQuery(query)
             .setParameter("status", PaymentTransactionStatus.SUCCESS)
@@ -120,12 +154,12 @@ class DashboardService(
             .toMap()
     }
 
-    private fun calculateAmount(mandate: PaymentMandate) = when (mandate.frequency) {
-        PaymentFrequency.ONCE -> mandate.amount
-        PaymentFrequency.MONTHLY -> mandate.amount * 12
-        PaymentFrequency.QUARTERLY -> mandate.amount * 4
-        PaymentFrequency.HALF_YEARLY -> mandate.amount * 2
-        PaymentFrequency.YEARLY -> mandate.amount
+    private fun calculateAmountPerYear(frequency: PaymentFrequency, amount: Double) = when (frequency) {
+        PaymentFrequency.ONCE -> amount
+        PaymentFrequency.MONTHLY -> amount * 12
+        PaymentFrequency.QUARTERLY -> amount * 4
+        PaymentFrequency.HALF_YEARLY -> amount * 2
+        PaymentFrequency.YEARLY -> amount
     }
 
     fun PaymentMandate.isSuccess() = transactions.any { transaction -> transaction.isSuccess() }
