@@ -39,18 +39,26 @@ interface DonationRepository : PagingAndSortingRepository<Donation, Long>, JpaSp
             "FROM Donation don " +
             "LEFT JOIN FETCH don.member mem " +
             "LEFT JOIN FETCH don.mandate man " +
+            "LEFT JOIN FETCH man.bankAccount ban " +
             "LEFT JOIN FETCH mem.groups " +
             "LEFT JOIN FETCH mem.fields " +
             "WHERE mem.firstName LIKE %?1% " +
             "OR mem.surName LIKE %?1% " +
             "OR mem.email LIKE %?1% " +
+            "OR man.code LIKE %?1% " +
+            "OR ban.iban LIKE %?1% " +
             "ORDER BY mem.surName",
         countQuery = "SELECT COUNT(don) " +
             "FROM Donation don " +
             "LEFT JOIN don.member mem " +
+            "LEFT JOIN don.mandate man " +
+            "LEFT JOIN man.bankAccount ban " +
             "WHERE  mem.firstName LIKE %?1% " +
             "OR mem.surName LIKE %?1% " +
-            "OR mem.email LIKE %?1% "
+            "OR mem.email LIKE %?1% " +
+            "OR man.code LIKE %?1% " +
+            "OR ban.iban LIKE %?1% "
+
     )
     fun findBySearch(search: String, page: Pageable): Page<Donation>
 }

@@ -102,7 +102,7 @@ class DonationsController(
         page: Pageable
     ): ResponseEntity<List<Donation>> {
         val res = if (search.isEmpty()) {
-            val sort = Sort.by(Sort.Direction.DESC, "id")
+            val sort = Sort.by(Sort.Direction.ASC, "member.surName")
             val pageSort = PageRequest.of(page.pageNumber, page.pageSize, sort)
             donationRepository.findAll(pageSort)
         } else {
