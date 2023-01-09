@@ -46,7 +46,7 @@
     "formik-material-ui": "0.0.22",
     "graphql": "^15.0.0",
     "graphql-tag": "^2.10.3",
-    "luxon": "^1.25.0",
+    "luxon": "^2.5.2",
     "material-table": "^1.69.2",
     "notistack": "^1.0.3",
     "qs": "^6.9.4",
